@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NeuroHome Margin Book</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one working column. Header + assumptions bar, filterable product table with expandable cost breakouts, cost library below. */
+:root {
+  --bg: #F4F8F9; --surface: #FFFFFF; --sunk: #EEF3F5; --fg: #0F1E24; --muted: #5A6B72; --line: #DAE3E6;
+  --accent: #0089B3; --accent-soft: #E3F5FB;
+  --labor: #3D74D1; --merch: #8656CC; --cos: #A3B0B5; --margin: #2A9466;
+  --good: #1F7F55; --good-bg: #E2F3EA; --warn: #9A6412; --warn-bg: #FBF0DB; --bad: #B33A2C; --bad-bg: #FBE6E3; --info-bg: #ECEFF1;
+  --f-text: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0D1519; --surface: #142025; --sunk: #10191D; --fg: #E3EDF0; --muted: #8DA1A8; --line: #24353B;
+  --accent: #38C6EE; --accent-soft: #123341;
+  --labor: #74A4F2; --merch: #B48DEE; --cos: #56666C; --margin: #43BD87;
+  --good: #5ACB98; --good-bg: #133227; --warn: #E7B45A; --warn-bg: #3A2C12; --bad: #F07A6B; --bad-bg: #3D1B17; --info-bg: #1C2A30;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0D1519; --surface: #142025; --sunk: #10191D; --fg: #E3EDF0; --muted: #8DA1A8; --line: #24353B;
+  --accent: #38C6EE; --accent-soft: #123341;
+  --labor: #74A4F2; --merch: #B48DEE; --cos: #56666C; --margin: #43BD87;
+  --good: #5ACB98; --good-bg: #133227; --warn: #E7B45A; --warn-bg: #3A2C12; --bad: #F07A6B; --bad-bg: #3D1B17; --info-bg: #1C2A30;
+  color-scheme: dark }
+
+* { box-sizing: border-box; }
+html { color-scheme: light; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-text); font-size: 14px; line-height: 1.45; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-block: 28px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 22px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 17px; font-weight: 600; }
+.eyebrow { font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.lede { color: var(--muted); max-width: 72ch; margin: 6px 0 0; }
+.num { font-variant-numeric: tabular-nums; font-family: var(--f-mono); font-size: 12.5px; }
+.muted { color: var(--muted); }
+
+/* Assumptions bar */
+.controls { display: grid; gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+.ctl-row { display: flex; flex-wrap: wrap; gap: 14px 18px; align-items: flex-end; }
+.field { display: grid; gap: 4px; }
+.field label { font-size: 11.5px; color: var(--muted); font-weight: 500; }
+.field .in { display: flex; align-items: center; gap: 4px; }
+input[type=number], input[type=search], select {
+  font: inherit; color: var(--fg); background: var(--sunk); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; }
+input[type=number] { width: 82px; font-family: var(--f-mono); font-size: 12.5px; text-align: right; }
+input[type=search] { width: 220px; max-width: 100%; }
+input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: inherit; font-size: 12.5px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 4px 11px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--fg); font-weight: 600; }
+.btn { font: inherit; font-size: 12.5px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 6px; padding: 6px 11px; cursor: pointer; }
+.btn:hover, .chip:hover { border-color: var(--accent); }
+
+/* Summary */
+.summary { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; font-size: 13px; }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+
+/* Table */
+.tbl-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; }
+th, td { padding: 9px 12px; text-align: right; border-bottom: 1px solid var(--line); vertical-align: top; white-space: nowrap; }
+th { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; position: sticky; top: 0; background: var(--surface); z-index: 1; }
+th:first-child, td:first-child { text-align: left; white-space: normal; min-width: 230px; max-width: 280px; }
+#tbl > thead th:first-child, #tbl > tbody > tr.item > td:first-child { position: sticky; left: 0; z-index: 2; background: var(--surface); box-shadow: 1px 0 0 var(--line); }
+#tbl > thead th:first-child { z-index: 3; }
+#tbl > thead tr.bands th { top: 0; text-align: center; font-size: 10.5px; padding: 6px 10px; border-bottom: 2px solid var(--line); }
+#tbl > thead tr.bands th.b-labor { color: var(--labor); border-bottom-color: var(--labor); }
+#tbl > thead tr.bands th.b-merch { color: var(--merch); border-bottom-color: var(--merch); }
+#tbl > thead tr.cols th { top: 29px; white-space: normal; min-width: 76px; max-width: 110px; line-height: 1.25; vertical-align: bottom; }
+#tbl > thead tr.cols th .rate { display: block; font-family: var(--f-mono); font-weight: 400; text-transform: none; letter-spacing: 0; margin-top: 2px; }
+#tbl td.c-labor, #tbl th.c-labor { background: color-mix(in srgb, var(--labor) 6%, var(--surface)); }
+#tbl td.c-merch, #tbl th.c-merch { background: color-mix(in srgb, var(--merch) 6%, var(--surface)); }
+#tbl td.first-tot, #tbl th.first-tot { border-left: 2px solid var(--line); }
+.cq { display: block; font-size: 11px; color: var(--muted); font-family: var(--f-mono); }
+.dash { color: var(--line); }
+tr.grp td { background: var(--sunk); font-weight: 600; font-size: 12.5px; text-align: left; padding: 7px 12px; }
+tr.grp .floor { font-weight: 400; color: var(--muted); margin-left: 8px; font-size: 12px; }
+tr.item { cursor: pointer; }
+tr.item:hover td { background: var(--accent-soft); }
+tr.item td:first-child { padding-left: 14px; }
+.iname { display: flex; gap: 8px; align-items: baseline; }
+.caret { font-family: var(--f-mono); color: var(--muted); width: 10px; flex: none; transition: transform .15s; }
+tr.item[aria-expanded="true"] .caret { transform: rotate(90deg); }
+.sub { font-size: 12px; color: var(--muted); }
+.bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; margin-top: 6px; background: var(--sunk); max-width: 260px; }
+.bar span { display: block; height: 100%; }
+.pill { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+.pill.good { background: var(--good-bg); color: var(--good); }
+.pill.warn { background: var(--warn-bg); color: var(--warn); }
+.pill.bad { background: var(--bad-bg); color: var(--bad); }
+.pill.info { background: var(--info-bg); color: var(--muted); }
+.neg { color: var(--bad); }
+
+/* Breakout */
+tr.detail > td { background: var(--sunk); padding: 14px 0 18px; white-space: normal; text-align: left; }
+/* Keep the breakout and section labels in view while the wide table scrolls sideways. */
+.detail-in { position: sticky; left: 0; width: min(1180px, calc(100vw - 48px)); padding: 0 16px; }
+.grp-in { position: sticky; left: 12px; }
+.bk { display: grid; gap: 14px; }
+.bk-grid { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 18px; }
+@media (max-width: 860px) { .bk-grid { grid-template-columns: minmax(0, 1fr); } }
+.bk table { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.bk th { position: static; background: var(--surface); }
+.bk td, .bk th { padding: 7px 10px; }
+.bk tfoot td { font-weight: 600; border-bottom: none; }
+.kind { font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 4px; color: var(--surface); }
+.kind.labor { background: var(--labor); }
+.kind.merch { background: var(--merch); }
+.wf { display: grid; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; align-content: start; }
+.wf div { display: flex; justify-content: space-between; gap: 10px; }
+.wf .tot { border-top: 1px solid var(--line); padding-top: 6px; font-weight: 600; }
+.note { font-size: 12.5px; color: var(--muted); max-width: 90ch; }
+.flag { color: var(--warn); font-weight: 600; }
+
+/* Library */
+.lib { display: grid; gap: 14px; }
+.lib-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 14px; }
+.lib-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.lib-card h3 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.lib-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 6px 0; border-top: 1px solid var(--line); }
+.lib-row .lname { font-weight: 500; }
+.lib-row .src { grid-column: 1 / -1; font-size: 11.5px; color: var(--muted); }
+.tag { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--warn); margin-left: 6px; }
+footer { font-size: 12px; color: var(--muted); display: grid; gap: 6px; max-width: 95ch; }
+@media (prefers-reduced-motion: reduce) { .caret { transition: none; } }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Internal · cost basis, not for families</div>
+    <h1>NeuroHome Margin Book</h1>
+    <p class="lede">Every price NeuroHome sells, built up from its parts. Each labor role and each kit, lab and supplement item has its own cost column, with the hours or quantity under the dollar figure. Click a row for the full breakout. Change any rate or unit cost below and every line recalculates.</p>
+  </header>
+
+  <section class="controls" aria-label="Assumptions and filters">
+    <div class="ctl-row">
+      <div class="field"><label for="g-pay">Payment & financing fees</label><div class="in"><input id="g-pay" type="number" step="0.5" min="0" data-g="payPct"><span class="muted">%</span></div></div>
+      <div class="field"><label for="g-comm">Sales commission</label><div class="in"><input id="g-comm" type="number" step="0.5" min="0" data-g="commPct"><span class="muted">%</span></div></div>
+      <div class="field"><label for="g-target">Target for items with no floor</label><div class="in"><input id="g-target" type="number" step="1" min="0" max="100" data-g="targetPct"><span class="muted">%</span></div></div>
+      <div class="field"><label for="g-ws">Supplement wholesale, % of retail</label><div class="in"><input id="g-ws" type="number" step="1" min="0" max="150" data-g="wsPct"><span class="muted">%</span></div></div>
+      <div class="field"><label for="q">Search</label><input id="q" type="search" placeholder="Item name"></div>
+      <div class="field"><label for="sort">Sort</label>
+        <select id="sort"><option value="cat">Catalogue order</option><option value="gmAsc">Gross margin %, lowest first</option><option value="gpDesc">Gross profit $, highest first</option></select></div>
+      <button class="btn" id="reset" type="button">Reset to sourced costs</button>
+    </div>
+    <div class="chips" id="chips" role="group" aria-label="Sections"></div>
+  </section>
+
+  <section class="summary" aria-live="polite">
+    <span id="sum"></span>
+    <span class="legend">
+      <span><i class="sw" style="background:var(--labor)"></i>Labor cost</span>
+      <span><i class="sw" style="background:var(--merch)"></i>Merchandise cost</span>
+      <span><i class="sw" style="background:var(--cos)"></i>Cost of sale</span>
+      <span><i class="sw" style="background:var(--margin)"></i>Left for overhead & profit</span>
+    </span>
+  </section>
+
+  <div class="tbl-wrap">
+    <table id="tbl">
+      <thead id="th"></thead>
+      <tbody id="tb"></tbody>
+    </table>
+  </div>
+
+  <section class="lib">
+    <div>
+      <h2>Cost library</h2>
+      <p class="lede">The building blocks every line above is made of. Labor is per hour; merchandise is per unit. Edits are kept in this browser only.</p>
+    </div>
+    <div class="lib-groups" id="lib"></div>
+  </section>
+
+  <footer>
+    <div><strong>Sources.</strong> Prices: neurohome-app <span class="num">lib/pricing</span> (catalogue and registries), read 2026-11-17. Costs: neurohome-journey Plans v5.0 (2026-08-20) for PT, physician, labs, kit and supplements; app notes for the green panel ($318), green handheld ($247) and coach ($40/hr). The Inventory master the cost model cites is not on GitHub; if it has moved, edit the library.</div>
+    <div><strong>Not in any cost above:</strong> kit shipping, kits lost on early exit, paid no-shows, the coach assigned to v2 Clinical (never on a call), Hub hosting and AI, Eva's support line, training and software. Those sit in overhead unless you add them to the library.</div>
+    <div><strong>Not modelled:</strong> the In-clinic intensive (no cost data exists in any repo) and Continuing Care's first quarter with Dr. Kyle (+$260 / +$140; set Dr. Kyle's cost to see it).</div>
+  </footer>
+</div>
+
+<script src="model.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
