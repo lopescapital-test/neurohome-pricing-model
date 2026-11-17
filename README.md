@@ -38,7 +38,7 @@ When a model grows large, move it to its own file (`models/clinic.js`) that read
 
 ## How the published page stays current
 
-The Margin Book is published as a private claude.ai artifact (https://claude.ai/artifact/MkTAz1ByqBqaLcNvSknRHo). A scheduled Claude task on Chad's machine, **"Republish Margin Book"**, runs on weekdays at 8:00 local time:
+The Margin Book is published as a private claude.ai artifact (https://claude.ai/artifact/MkTAz1ByqBqaLcNvSknRHo). A scheduled Claude task in the repo owner's Claude desktop app, **"Republish Margin Book"**, runs on weekdays at 8:00 local time:
 
 1. It fetches `origin/main` and compares its commit with `.last-published`, a local file that is not committed.
 2. If nothing changed, it stops.
