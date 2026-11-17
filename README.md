@@ -12,6 +12,7 @@ This is the base for any new pricing model (clinic partnerships, expanded telehe
 |---|---|
 | `model.js` | The data and the math, with no UI. It holds the cost library (`COMPONENTS`), settings (`GLOBALS`), sections with margin floors (`SECTIONS`), every product (`PRODUCTS`), and `calc()`. It runs in the browser (`window.NHModel`) and in Node (`require('./model.js')`). |
 | `index.html` + `app.js` | The Margin Book page. It has one cost column per labor role and per merchandise item, a breakout for each row, and an editable cost library. Open `index.html` in a browser; no build step is needed. |
+| `scripts/build.js` | Inlines `model.js` and `app.js` into `dist/margin-book.html`, the one-file page published as the Margin Book artifact. `dist/` is not committed. |
 | `scripts/export-csv.js` | Exports every product to CSV with the per-part costs. Run `node scripts/export-csv.js > margins.csv`. Override the settings with `PAY=3 COMM=10 WS=50`. |
 
 ## How a product is defined
@@ -34,6 +35,18 @@ Each line is `[componentKey, quantity, why]`. The cost of a line is quantity × 
 3. Open `index.html`. The new roles and items get their own columns automatically.
 
 When a model grows large, move it to its own file (`models/clinic.js`) that reads `NHModel.COMPONENTS` and pushes its products. That way the cost library stays in one place.
+
+## How the published page stays current
+
+The Margin Book is published as a private claude.ai artifact (https://claude.ai/artifact/MkTAz1ByqBqaLcNvSknRHo). A scheduled Claude task on Chad's machine, **"Republish Margin Book"**, runs on weekdays at 8:00 local time:
+
+1. It fetches `origin/main` and compares its commit with `.last-published`, a local file that is not committed.
+2. If nothing changed, it stops.
+3. If something changed, it fast-forwards the local copy, runs `node scripts/build.js`, republishes `dist/margin-book.html` to that artifact, and records the commit.
+
+**To update the page:** push to `main`. The page updates at the next run. To update it sooner, run the task from the app's scheduled tasks.
+
+**Limits:** the task runs only while the Claude app is open; a missed run happens at the next launch. It never merges or overwrites local edits. If the local copy has uncommitted changes or has diverged from `main`, it stops and reports.
 
 ## Sources and how current they are
 
