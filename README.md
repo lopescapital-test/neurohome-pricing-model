@@ -17,9 +17,9 @@ This is the base for any new pricing model (clinic partnerships, expanded telehe
 
 ## Reviews
 
-Analyses built on this model are kept in `reviews/`, one folder per review.
+Analyses built on this model are kept in `docs/reviews/`, one folder per review. GitHub Pages publishes the `docs/` folder, and only that folder, as web pages at https://lopescapital-test.github.io/neurohome-pricing-model/. A push to `main` updates the published pages within a few minutes.
 
-- [`reviews/2026-11-comp-plan/`](reviews/2026-11-comp-plan/): the proposed Specialist and care-team compensation plan, tested against the model. Includes a stress-test page, a board markup of the deck and a revised deck.
+- [`docs/reviews/2026-11-comp-plan/`](docs/reviews/2026-11-comp-plan/) ([live page](https://lopescapital-test.github.io/neurohome-pricing-model/reviews/2026-11-comp-plan/)): the proposed Specialist and care-team compensation plan, tested against the model. Includes a stress-test page, a board markup of the deck and a revised deck.
 
 ## How a product is defined
 

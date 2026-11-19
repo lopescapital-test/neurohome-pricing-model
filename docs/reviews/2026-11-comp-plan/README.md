@@ -4,6 +4,8 @@ A review of the proposed Sales and Care Team Compensation Plan (board review dra
 
 > These files show our unit costs, margins and proposed pay. The repo is public, so anyone with the link can read them.
 
+**Live page:** https://lopescapital-test.github.io/neurohome-pricing-model/reviews/2026-11-comp-plan/ (`index.html` in this folder links to the three files below).
+
 ## Files
 
 | File | What it is |
