@@ -4,7 +4,7 @@ The internal cost-and-margin model behind NeuroHome's prices. Every sellable ite
 
 This is the base for any new pricing model (clinic partnerships, expanded telehealth, new tiers). New models reuse the same cost library and the same math, so they stay comparable with the current catalogue.
 
-> **Internal only.** This repo holds our unit costs and labor rates. Keep it private. Nothing here may be copied into family-facing code. `neurohome-app` deliberately keeps costs out of its pricing bundle and tests for it.
+> **This repo is public.** It holds our unit costs, labor rates, margins and proposed pay, and anyone with the link can read them. Before adding anything here, decide whether it is fine for anyone to see. Keep patient data, credentials and contracts out entirely. Costs still stay out of family-facing code: `neurohome-app` deliberately keeps them out of its pricing bundle and tests for it.
 
 ## What's here
 

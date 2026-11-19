@@ -2,7 +2,7 @@
 
 A review of the proposed Sales and Care Team Compensation Plan (board review draft, prepared by Matthew Hawes, November 2026) against the costs in this repo's pricing model.
 
-> **Internal only.** These files show our unit costs, margins and proposed pay. Do not forward them outside the company.
+> These files show our unit costs, margins and proposed pay. The repo is public, so anyone with the link can read them.
 
 ## Files
 
