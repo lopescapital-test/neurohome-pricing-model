@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important} body{margin:0}</style>
+<title>Commission Plan Stress Test</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column. Verdict summary, then one card per sale type with current vs. proposed bars, then the rule changes and the recast table. */
+:root {
+  --bg: #F4F8F9; --surface: #FFFFFF; --sunk: #EEF3F5; --fg: #0F1E24; --muted: #5A6B72; --line: #DAE3E6;
+  --accent: #0089B3; --accent-soft: #E3F5FB;
+  --cost: #7C8F98; --pass: #B9C7CD; --comm: #D2683A; --bonus: #E9A23B; --fees: #8E7CC3; --left: #2A9466;
+  --good: #1F7F55; --good-bg: #E2F3EA; --warn: #9A6412; --warn-bg: #FBF0DB; --bad: #B33A2C; --bad-bg: #FBE6E3;
+  --f-text: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0D1519; --surface: #142025; --sunk: #10191D; --fg: #E3EDF0; --muted: #8DA1A8; --line: #24353B;
+  --accent: #38C6EE; --accent-soft: #123341;
+  --cost: #6B7E87; --pass: #3E5058; --comm: #F08A5D; --bonus: #F2BC5E; --fees: #A897DE; --left: #43BD87;
+  --good: #5ACB98; --good-bg: #133227; --warn: #E7B45A; --warn-bg: #3A2C12; --bad: #F07A6B; --bad-bg: #3D1B17;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0D1519; --surface: #142025; --sunk: #10191D; --fg: #E3EDF0; --muted: #8DA1A8; --line: #24353B;
+  --accent: #38C6EE; --accent-soft: #123341;
+  --cost: #6B7E87; --pass: #3E5058; --comm: #F08A5D; --bonus: #F2BC5E; --fees: #A897DE; --left: #43BD87;
+  --good: #5ACB98; --good-bg: #133227; --warn: #E7B45A; --warn-bg: #3A2C12; --bad: #F07A6B; --bad-bg: #3D1B17;
+  color-scheme: dark }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-text); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 32px 72px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.015em; }
+h2 { font-size: 20px; font-weight: 650; }
+h3 { font-size: 16px; font-weight: 600; }
+p { margin: 0; }
+.eyebrow { font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.lede { color: var(--muted); max-width: 70ch; }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 13px; }
+.muted { color: var(--muted); }
+header { display: grid; gap: 10px; }
+
+/* Controls + legend */
+.bar-head { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: center; justify-content: space-between; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 10px; border-bottom: 1px solid var(--line); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg button { font: inherit; font-size: 13px; border: 0; background: transparent; color: var(--fg); padding: 6px 12px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--fg); font-weight: 600; box-shadow: inset 0 -2px 0 var(--accent); }
+.seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+
+/* Verdict strip */
+.verdicts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 720px) { .verdicts { grid-template-columns: minmax(0, 1fr); } }
+.vbox { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.vbox .k { font-size: 26px; font-weight: 700; font-family: var(--f-mono); }
+.vbox.good .k { color: var(--good); } .vbox.bad .k { color: var(--bad); } .vbox.gap .k { color: var(--warn); }
+.vbox ul { margin: 0; padding-left: 18px; font-size: 13.5px; color: var(--muted); }
+
+/* Example cards */
+.cards { display: grid; gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: grid; gap: 14px; min-width: 0; }
+.card-top { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between; }
+.card-top .t { display: grid; gap: 2px; min-width: 0; }
+.type { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.pill.good { background: var(--good-bg); color: var(--good); }
+.pill.bad { background: var(--bad-bg); color: var(--bad); }
+.pill.gap { background: var(--warn-bg); color: var(--warn); }
+.facts { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 13px; color: var(--muted); }
+.facts b { color: var(--fg); font-weight: 600; font-family: var(--f-mono); font-size: 13px; }
+.rows { display: grid; gap: 8px; }
+.row { display: grid; grid-template-columns: 82px minmax(0, 1fr) 230px; gap: 12px; align-items: center; }
+@media (max-width: 760px) { .row { grid-template-columns: 70px minmax(0, 1fr); } .row .stat { grid-column: 2; } }
+.row .lab { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.row.pro .lab { color: var(--accent); }
+.track { position: relative; height: 22px; border-radius: 4px; background: var(--sunk); overflow: hidden; display: flex; }
+.track span { display: block; height: 100%; }
+.track .over { position: absolute; top: 0; bottom: 0; border-left: 2px dashed var(--fg); }
+.stat { display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: 12.5px; color: var(--muted); }
+.stat b { font-family: var(--f-mono); font-weight: 500; color: var(--fg); }
+.stat .neg { color: var(--bad); }
+.why { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px 20px; font-size: 13.5px; }
+@media (max-width: 760px) { .why { grid-template-columns: minmax(0, 1fr); } }
+.why div { display: grid; gap: 2px; }
+.why .h { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.why .h.pro { color: var(--accent); }
+
+/* Rules */
+.rules { display: grid; gap: 10px; counter-reset: rule; }
+.rule { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.rule::before { counter-increment: rule; content: counter(rule); font-family: var(--f-mono); font-weight: 500; color: var(--accent); font-size: 18px; }
+.rule .body { display: grid; gap: 4px; min-width: 0; }
+.rule .fix { font-size: 12.5px; color: var(--muted); }
+
+/* Recast table */
+.tbl { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { padding: 9px 12px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; white-space: normal; min-width: 190px; }
+th { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+thead tr.band th { text-align: center; border-bottom: 2px solid var(--line); }
+thead tr.band th.cur { color: var(--muted); }
+thead tr.band th.pro { color: var(--accent); border-bottom-color: var(--accent); }
+td.pro, th.pro { background: color-mix(in srgb, var(--accent) 6%, var(--surface)); }
+td.first, th.first { border-left: 2px solid var(--line); }
+tbody tr:last-child td { border-bottom: 0; }
+td .sub { font-size: 12px; color: var(--muted); }
+.neg { color: var(--bad); }
+.up { color: var(--good); }
+footer { font-size: 12.5px; color: var(--muted); display: grid; gap: 6px; max-width: 90ch; }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Internal · board review support</div>
+    <h1>Commission Plan Stress Test</h1>
+    <p class="lede">Each sale type in the proposed Specialist plan, run against our real costs from the Margin Book. Every bar is one sale, as a share of its price: what the product costs us, what the Specialist is paid, card fees, and what is left for ads, overhead and profit. The top bar is the plan as proposed; the bottom bar is the same sale under the changes below.</p>
+  </header>
+
+  <div class="bar-head">
+    <div class="seg" role="group" aria-label="Specialist plan">
+      <button type="button" id="plan-a" data-plan="A" aria-pressed="true">Plan A · commission only</button>
+      <button type="button" id="plan-b" data-plan="B" aria-pressed="false">Plan B · $45k base</button>
+    </div>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--cost)"></i>Our cost</span>
+      <span><i class="sw" style="background:var(--pass)"></i>Pass-through cost (labs, physician, supplements)</span>
+      <span><i class="sw" style="background:var(--comm)"></i>Commission</span>
+      <span><i class="sw" style="background:var(--bonus)"></i>Bonuses</span>
+      <span><i class="sw" style="background:var(--fees)"></i>Card fees 3%</span>
+      <span><i class="sw" style="background:var(--left)"></i>Left for ads, overhead, profit</span>
+    </div>
+  </div>
+
+  <section class="verdicts" aria-label="Summary">
+    <div class="vbox good"><div class="k">6 of 9</div><h3>Work as proposed</h3><ul><li>Clinical, Guided and Wellness plans</li><li>Continued plans</li><li>Equipment and most supplements</li><li>Labs (no commission)</li></ul></div>
+    <div class="vbox bad"><div class="k">2 of 9</div><h3>Break</h3><ul><li>Pre-Intensive: the Specialist can take 62% of gross profit</li><li>AdrenaCalm: sold below cost, still commissioned</li></ul></div>
+    <div class="vbox gap"><div class="k">1 of 9</div><h3>Not covered by the plan</h3><ul><li>Dr. Jared bundle, plus Eva, time, Hub and v1 plans have no rate</li></ul></div>
+  </section>
+
+  <section class="cards" id="cards" aria-label="Sale-by-sale examples"></section>
+
+  <section style="display:grid;gap:12px" aria-labelledby="rules-h">
+    <div style="display:grid;gap:6px"><h2 id="rules-h">Proposed changes</h2><p class="lede">Rates stay where the deck sets them. These change what the rate is paid on and add limits, so the plan holds on every product, not only the core programs.</p></div>
+    <div class="rules">
+      <div class="rule"><div class="body"><h3>Pay therapy plans on price minus pass-through costs</h3><p>Labs, physician time, supplements included in a program and supplement credits are passed through at or near cost. Take them out before applying 15% / 6%.</p><p class="fix">Fixes the Pre-Intensive and the Dr. Jared bundle; trims about $140 of commission on labs from each Clinical sale.</p></div></div>
+      <div class="rule"><div class="body"><h3>Cap total pay on a sale at 25% of its gross profit</h3><p>Commission plus bonuses on one sale never exceeds a quarter of what the sale earns before overhead. A safety net for products added later.</p><p class="fix">None of the nine examples hits the cap after rule 1; without rule 1, the Pre-Intensive and Dr. Jared bundle would.</p></div></div>
+      <div class="rule"><div class="body"><h3>No bundle bonus on any product that already includes equipment</h3><p>The deck excludes Clinical, Guided and Wellness. Extend that to every product with a kit item inside it.</p><p class="fix">Removes the $250 / $125 bonus from the Pre-Intensive, which includes a green panel.</p></div></div>
+      <div class="rule"><div class="body"><h3>Give every product a rate, and make "none" the default</h3><p>List the Dr. Jared bundle, Eva, care-team and physician time, Hub renewals and v1 plans by name.</p><p class="fix">Stops each one being argued as a 15% first therapy plan.</p></div></div>
+      <div class="rule"><div class="body"><h3>Pay supplements on gross profit, like equipment, and nothing below cost</h3><p>20% / 10% of gross profit. A product sold at a loss pays no commission until it is repriced.</p><p class="fix">Same payout on normal supplements; AdrenaCalm pays $0 until its cost or price is fixed.</p></div></div>
+    </div>
+  </section>
+
+  <section style="display:grid;gap:12px" aria-labelledby="recast-h">
+    <div style="display:grid;gap:6px"><h2 id="recast-h">The examples, recast</h2><p class="lede" id="recast-lede"></p></div>
+    <div class="tbl"><table>
+      <thead>
+        <tr class="band"><th rowspan="2" style="vertical-align:bottom;text-align:left">Sale</th><th rowspan="2" style="vertical-align:bottom">Price</th><th rowspan="2" style="vertical-align:bottom">Gross profit</th><th colspan="3" class="cur first">As proposed</th><th colspan="3" class="pro first">With changes</th><th rowspan="2" style="vertical-align:bottom" class="first">Change to Specialist</th></tr>
+        <tr><th class="first">Specialist paid</th><th>Share of gross profit</th><th>Left</th><th class="pro first">Specialist paid</th><th class="pro">Share of gross profit</th><th class="pro">Left</th></tr>
+      </thead>
+      <tbody id="recast"></tbody>
+    </table></div>
+  </section>
+
+  <footer>
+    <div><strong>Costs.</strong> From the NeuroHome pricing model (Margin Book), repo commit 6acde32. Some are assumed: coordinator $40/hr, Hub $0, supplements with no recorded cost at 50% of list. Shipping, no-shows and the coach assigned to Clinical are not costed, so real margins are a few points lower.</div>
+    <div><strong>Plan terms.</strong> NeuroSage Home Sales and Care Team Compensation Plan, board review draft, November 2026. Plan B figures are commission only; the $3,750 monthly base is a fixed cost and is left out of per-sale bars. Card fees are 3% of price; Cherry financing fees would add to them.</div>
+    <div><strong>Pre-Intensive, as proposed</strong> shows the most the deck allows: 15%, the $250 bundle bonus (it includes a green panel) and 1.5% for paying in full. Without the bonuses it is $810, still 44% of gross profit.</div>
+  </footer>
+</div>
+
+<script>
+const DATA = [{"id":"clin","type":"First therapy plan","verdict":"works","name":"60-minute sessions","sec":"Clinical (v2)","price":14500,"cogs":4945,"gp":9555,"gm":65.9,"pass":950,"pay":435,"floor":60,"cur":{"A":{"comm":2175,"bonus":0,"total":2175,"ofGP":22.8,"left":6945,"leftPct":47.9},"B":{"comm":870,"bonus":0,"total":870,"ofGP":9.1,"left":8250,"leftPct":56.9}},"pro":{"A":{"comm":2033,"bonus":0,"capped":false,"total":2033,"ofGP":21.3,"left":7087,"leftPct":48.9},"B":{"comm":813,"bonus":0,"capped":false,"total":813,"ofGP":8.5,"left":8307,"leftPct":57.3}}},{"id":"pre","type":"First therapy plan, mostly pass-through","verdict":"breaks","name":"Pre-Intensive","sec":"Pre-Intensive and Eva","price":5400,"cogs":3558,"gp":1842,"gm":34.1,"pass":3040,"pay":162,"floor":50,"cur":{"A":{"comm":810,"bonus":331,"total":1141,"ofGP":61.9,"left":539,"leftPct":10},"B":{"comm":324,"bonus":152,"total":476,"ofGP":25.8,"left":1204,"leftPct":22.3}},"pro":{"A":{"comm":354,"bonus":81,"capped":false,"total":435,"ofGP":23.6,"left":1245,"leftPct":23.1},"B":{"comm":142,"bonus":27,"capped":false,"total":169,"ofGP":9.2,"left":1511,"leftPct":28}}},{"id":"well","type":"First therapy plan, Wellness","verdict":"works","name":"1× a week, 60 min","sec":"Wellness (v2), 12-week first quarter","price":4850,"cogs":1340,"gp":3510,"gm":72.4,"pass":0,"pay":146,"floor":70,"cur":{"A":{"comm":728,"bonus":0,"total":728,"ofGP":20.7,"left":2637,"leftPct":54.4},"B":{"comm":291,"bonus":0,"total":291,"ofGP":8.3,"left":3074,"leftPct":63.4}},"pro":{"A":{"comm":728,"bonus":0,"capped":false,"total":728,"ofGP":20.7,"left":2637,"leftPct":54.4},"B":{"comm":291,"bonus":0,"capped":false,"total":291,"ofGP":8.3,"left":3074,"leftPct":63.4}}},{"id":"cont","type":"Continued therapy plan","verdict":"works","name":"12 sessions + 1 PT assessment, 60 min","sec":"Continuing Care, per quarter","price":1440,"cogs":550,"gp":890,"gm":61.8,"pass":0,"pay":43,"floor":50,"cur":{"A":{"comm":144,"bonus":0,"total":144,"ofGP":16.2,"left":703,"leftPct":48.8},"B":{"comm":72,"bonus":0,"total":72,"ofGP":8.1,"left":775,"leftPct":53.8}},"pro":{"A":{"comm":144,"bonus":0,"capped":false,"total":144,"ofGP":16.2,"left":703,"leftPct":48.8},"B":{"comm":72,"bonus":0,"capped":false,"total":72,"ofGP":8.1,"left":775,"leftPct":53.8}}},{"id":"equip","type":"Equipment","verdict":"works","name":"Green Light LED Panel","sec":"Kit, devices and Hub","price":850,"cogs":318,"gp":532,"gm":62.6,"pass":0,"pay":26,"floor":50,"cur":{"A":{"comm":106,"bonus":0,"total":106,"ofGP":19.9,"left":401,"leftPct":47.1},"B":{"comm":53,"bonus":0,"total":53,"ofGP":10,"left":454,"leftPct":53.4}},"pro":{"A":{"comm":106,"bonus":0,"capped":false,"total":106,"ofGP":19.9,"left":401,"leftPct":47.1},"B":{"comm":53,"bonus":0,"capped":false,"total":53,"ofGP":10,"left":454,"leftPct":53.4}}},{"id":"supp","type":"Supplement, first order","verdict":"works","name":"Gut Feeling Powder","sec":"Supplements, sold each","price":165,"cogs":80,"gp":85,"gm":51.5,"pass":80,"pay":5,"floor":50,"cur":{"A":{"comm":17,"bonus":0,"total":17,"ofGP":20,"left":63,"leftPct":38.2},"B":{"comm":8,"bonus":0,"total":8,"ofGP":9.4,"left":72,"leftPct":43.7}},"pro":{"A":{"comm":17,"bonus":0,"capped":false,"total":17,"ofGP":20,"left":63,"leftPct":38.2},"B":{"comm":9,"bonus":0,"capped":false,"total":9,"ofGP":10.6,"left":71,"leftPct":43.1}}},{"id":"adrena","type":"Supplement, below cost","verdict":"breaks","name":"AdrenaCalm-SE KR-73","sec":"Supplements, sold each","price":50,"cogs":65,"gp":-15,"gm":-30,"pass":65,"pay":2,"floor":50,"cur":{"A":{"comm":5,"bonus":0,"total":5,"ofGP":null,"left":-21,"leftPct":-43},"B":{"comm":3,"bonus":0,"total":3,"ofGP":null,"left":-19,"leftPct":-39}},"pro":{"A":{"comm":0,"bonus":0,"capped":false,"total":0,"ofGP":null,"left":-16,"leftPct":-33},"B":{"comm":0,"bonus":0,"capped":false,"total":0,"ofGP":null,"left":-16,"leftPct":-33}}},{"id":"lab","type":"Lab","verdict":"works","name":"Gut Zoomer","sec":"Labs","price":600,"cogs":550,"gp":50,"gm":8.3,"pass":550,"pay":18,"floor":50,"cur":{"A":{"comm":0,"bonus":0,"total":0,"ofGP":0,"left":32,"leftPct":5.3},"B":{"comm":0,"bonus":0,"total":0,"ofGP":0,"left":32,"leftPct":5.3}},"pro":{"A":{"comm":0,"bonus":0,"capped":false,"total":0,"ofGP":0,"left":32,"leftPct":5.3},"B":{"comm":0,"bonus":0,"capped":false,"total":0,"ofGP":0,"left":32,"leftPct":5.3}}},{"id":"jared","type":"Unassigned: Dr. Jared bundle","verdict":"gap","name":"Dr. Jared bundle","sec":"v2 add-on","price":2000,"cogs":1250,"gp":750,"gm":37.5,"pass":1250,"pay":60,"floor":50,"cur":{"A":{"comm":300,"bonus":0,"total":300,"ofGP":40,"left":390,"leftPct":19.5},"B":{"comm":120,"bonus":0,"total":120,"ofGP":16,"left":570,"leftPct":28.5}},"pro":{"A":{"comm":113,"bonus":0,"capped":false,"total":113,"ofGP":15.1,"left":577,"leftPct":28.9},"B":{"comm":45,"bonus":0,"capped":false,"total":45,"ofGP":6,"left":645,"leftPct":32.3}}}];
+const TEXT = {
+  clin: { now: 'Specialist takes about 23% of gross profit; almost half the price is left. Commission is also paid on $950 of labs we pass through at cost.', fix: 'Pay on $13,550 (price minus labs). Specialist gets $142 less; nothing else changes.' },
+  pre: { now: 'Labs, the physician hour and supplements are $3,040 of the $5,400 price, so gross profit is only $1,842. 15% of the full price plus both bonuses pays the Specialist 62% of it, leaving 10%.', fix: 'Pay 15% on $2,360 (price minus pass-through), no bundle bonus. Specialist still earns $435; 23% is left. The low margin itself is a pricing question, not a commission one.' },
+  well: { now: 'No pass-through costs inside, so commission on price works: about 21% of gross profit, 54% left.', fix: 'No change.' },
+  cont: { now: 'At 10% the Specialist takes 16% of gross profit; about half the price is left.', fix: 'No change.' },
+  equip: { now: 'Already paid on gross margin, so the Specialist share is fixed at 20% / 10% of profit. The deck’s example ("$2,000 panel, $1,125 margin") is not in our catalogue: our panel is $850 with $532 of margin.', fix: 'No change. Correct the example in the deck.' },
+  supp: { now: '10% of a $165 price is $16.50, about 20% of the $85 gross profit. Works.', fix: 'Pay 20% of gross profit instead: same $17 here, and it can never pay on a loss.' },
+  adrena: { now: 'Costs us $65, sells for $50. We lose $15 before commission, and the plan still pays $5 on it.', fix: 'No commission below cost. Then fix the cost or the price: $130 would give it a 50% margin.' },
+  lab: { now: 'Sold at cost plus about 10% by design; the plan pays nothing. Works.', fix: 'No change.' },
+  jared: { now: 'The plan gives this no rate. If it is paid as a first therapy plan, 15% of $2,000 is $300, 40% of a $750 gross profit.', fix: 'Pay 15% on price minus the physician hour and the supplement credit: $113.' },
+};
+const VERDICT = { works: ['good', 'Works'], breaks: ['bad', 'Breaks'], gap: ['gap', 'Not covered'] };
+let plan = 'A';
+try { const s = localStorage.getItem('comp-stress-plan'); if (s === 'A' || s === 'B') plan = s; } catch (e) {}
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const money = n => (n < 0 ? '−$' : '$') + Math.abs(Math.round(n)).toLocaleString('en-US');
+const pct = n => (n < 0 ? '−' : '') + Math.abs(n).toFixed(1) + '%';
+
+function bar(d, o) {
+  // Segments as % of price. When costs exceed price, the scale grows and a dashed line marks 100% of price.
+  const own = d.cogs - d.pass;
+  const segs = [[own, 'var(--cost)', 'Our cost'], [d.pass, 'var(--pass)', 'Pass-through cost'], [o.comm, 'var(--comm)', 'Commission'], [o.bonus, 'var(--bonus)', 'Bonuses'], [d.pay, 'var(--fees)', 'Card fees'], [Math.max(0, o.left), 'var(--left)', 'Left']];
+  const total = Math.max(d.price, own + d.pass + o.comm + o.bonus + d.pay);
+  const label = segs.filter(s => s[0] > 0).map(s => `${s[2]} ${money(s[0])}`).join(', ');
+  const over = total > d.price ? `<i class="over" style="left:${(d.price / total * 100).toFixed(2)}%" title="Price"></i>` : '';
+  return `<div class="track" role="img" aria-label="${esc(label)}">${segs.map(s => s[0] > 0 ? `<span style="width:${(s[0] / total * 100).toFixed(2)}%;background:${s[1]}" title="${esc(s[2])}: ${money(s[0])}"></span>` : '').join('')}${over}</div>`;
+}
+function stat(o) {
+  const share = o.ofGP == null ? 'n/a' : pct(o.ofGP);
+  return `<div class="stat"><span>Paid <b>${money(o.total)}</b></span><span>of profit <b>${share}</b></span><span>Left <b class="${o.left < 0 ? 'neg' : ''}">${pct(o.leftPct)}</b></span></div>`;
+}
+function render() {
+  for (const b of document.querySelectorAll('[data-plan]')) b.setAttribute('aria-pressed', String(b.dataset.plan === plan));
+  $('cards').innerHTML = DATA.map(d => {
+    const c = d.cur[plan], p = d.pro[plan], v = VERDICT[d.verdict], t = TEXT[d.id];
+    return `<article class="card" aria-labelledby="h-${d.id}">
+      <div class="card-top"><div class="t"><span class="type">${esc(d.type)}</span><h3 id="h-${d.id}">${esc(d.name)} <span class="muted" style="font-weight:400">· ${esc(d.sec)}</span></h3></div><span class="pill ${v[0]}">${v[1]}</span></div>
+      <div class="facts"><span>Price <b>${money(d.price)}</b></span><span>Our cost <b>${money(d.cogs)}</b></span>${d.pass && /plan|bundle/i.test(d.type) ? `<span>of which pass-through <b>${money(d.pass)}</b></span>` : ''}<span>Gross profit <b>${money(d.gp)}</b> (${pct(d.gm)})</span></div>
+      <div class="rows">
+        <div class="row"><span class="lab">Proposed</span>${bar(d, c)}${stat(c)}</div>
+        <div class="row pro"><span class="lab">Changed</span>${bar(d, p)}${stat(p)}</div>
+      </div>
+      <div class="why"><div><span class="h">As proposed</span><p>${esc(t.now)}</p></div><div><span class="h pro">With changes</span><p>${esc(t.fix)}</p></div></div>
+    </article>`;
+  }).join('');
+  $('recast').innerHTML = DATA.map(d => {
+    const c = d.cur[plan], p = d.pro[plan], delta = p.total - c.total;
+    const sh = o => o.ofGP == null ? '<span class="muted">n/a</span>' : pct(o.ofGP);
+    return `<tr><td>${esc(d.name)}<div class="sub">${esc(d.type)}</div></td><td class="num">${money(d.price)}</td><td class="num ${d.gp < 0 ? 'neg' : ''}">${money(d.gp)}</td>
+      <td class="num first">${money(c.total)}</td><td class="num">${sh(c)}</td><td class="num ${c.left < 0 ? 'neg' : ''}">${pct(c.leftPct)}</td>
+      <td class="num pro first">${money(p.total)}</td><td class="num pro">${sh(p)}</td><td class="num pro ${p.left < 0 ? 'neg' : ''}">${pct(p.leftPct)}</td>
+      <td class="num first ${delta < 0 ? 'neg' : ''}">${delta === 0 ? '<span class="muted">none</span>' : (delta > 0 ? '+' : '−') + money(Math.abs(delta)).replace('−', '')}</td></tr>`;
+  }).join('');
+  $('recast-lede').textContent = plan === 'A'
+    ? 'Plan A. Specialist pay on the core programs moves by at most 7%; the cuts land where the plan was overpaying: the Pre-Intensive, the Dr. Jared bundle and the below-cost supplement.'
+    : 'Plan B, commission only (the $45,000 base is not split across sales). The same changes, at Plan B rates.';
+}
+$('plan-a').addEventListener('click', () => { plan = 'A'; try { localStorage.setItem('comp-stress-plan', plan); } catch (e) {} render(); });
+$('plan-b').addEventListener('click', () => { plan = 'B'; try { localStorage.setItem('comp-stress-plan', plan); } catch (e) {} render(); });
+render();
+</script>
+
+</body>
+</html>

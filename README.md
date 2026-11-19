@@ -15,6 +15,12 @@ This is the base for any new pricing model (clinic partnerships, expanded telehe
 | `scripts/build.js` | Inlines `model.js` and `app.js` into `dist/margin-book.html`, the one-file page published as the Margin Book artifact. `dist/` is not committed. |
 | `scripts/export-csv.js` | Exports every product to CSV with the per-part costs. Run `node scripts/export-csv.js > margins.csv`. Override the settings with `PAY=3 COMM=10 WS=50`. |
 
+## Reviews
+
+Analyses built on this model are kept in `reviews/`, one folder per review.
+
+- [`reviews/2026-11-comp-plan/`](reviews/2026-11-comp-plan/): the proposed Specialist and care-team compensation plan, tested against the model. Includes a stress-test page, a board markup of the deck and a revised deck.
+
 ## How a product is defined
 
 ```js
