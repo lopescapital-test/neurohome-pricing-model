@@ -28,6 +28,7 @@ a.card:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .card h2 { font-family: var(--f-head); font-weight: 600; color: var(--navy); font-size: 19px; margin: 0; }
 .card p { grid-column: 1; font-size: 15px; color: var(--muted); }
 .kind { grid-row: 1 / span 2; grid-column: 2; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); white-space: nowrap; }
+h2.sec { font-family: var(--f-head); font-weight: 600; color: var(--navy); font-size: 15px; letter-spacing: 0.06em; text-transform: uppercase; margin: 8px 0 -14px; }
 .note { font-size: 14px; color: var(--muted); border-left: 4px solid var(--accent); padding-left: 14px; }
 footer { font-size: 13px; color: var(--muted); }
 </style>
@@ -37,9 +38,25 @@ footer { font-size: 13px; color: var(--muted); }
   <div class="brand">NeuroSage Home</div>
   <header style="display:grid;gap:12px">
     <h1>Sales and Care Team Compensation Plan: review</h1>
-    <p class="lede">The proposed Specialist and care-team pay plan, tested against our product costs. Start with the stress test for the numbers, then the markup for the recommended changes, then the revised plan.</p>
+    <p class="lede">The Specialist and care-team pay plan, tested against our product costs. The first three documents reflect what was agreed in the November 20 meeting: 10% commission on every sale, with labs, clinician time and supplements excluded, and a care team pool funded from supplements.</p>
   </header>
-  <nav class="cards" aria-label="Review documents">
+  <h2 class="sec">Agreed in the November 20 meeting</h2>
+  <nav class="cards" aria-label="Agreed plan documents">
+    <a class="card" href="agreed-plan-stress-test.html">
+      <h2>Stress test: the agreed plan</h2><span class="kind">Web page</span>
+      <p>Eleven example sales under the board draft and the agreed 10% plan, plus a typical month, Specialist earnings, the care team pool and what is still undecided.</p>
+    </a>
+    <a class="card" href="comp-plan-redline-nov20.pdf">
+      <h2>Redline of the draft plan</h2><span class="kind">PDF · 13 pages</span>
+      <p>The original deck with the nine meeting decisions (D1 to D9) marked in red, plus the decision list and the example sales.</p>
+    </a>
+    <a class="card" href="comp-plan-final.pdf">
+      <h2>Final compensation plan</h2><span class="kind">PDF · 12 pages</span>
+      <p>The clean plan as agreed, with what is still to decide. Pending attorney review.</p>
+    </a>
+  </nav>
+  <h2 class="sec">Earlier review, November 19</h2>
+  <nav class="cards" aria-label="Earlier review documents">
     <a class="card" href="commission-plan-stress-test.html">
       <h2>Commission stress test</h2><span class="kind">Interactive page</span>
       <p>Nine real sales, one per commission type, under the plan as drafted and with the recommended changes. Switch between Plan A and Plan B.</p>
@@ -51,6 +68,10 @@ footer { font-size: 13px; color: var(--muted); }
     <a class="card" href="comp-plan-revised.pdf">
       <h2>Revised compensation plan</h2><span class="kind">PDF · 14 pages</span>
       <p>The clean plan with the amendments written in, including a rate for every product. Pending board approval and attorney review.</p>
+    </a>
+    <a class="card" href="therapy-only-commission.html">
+      <h2>Scenario: commission on therapy and coaching only</h2><span class="kind">Web page</span>
+      <p>No commission on the kit, labs, supplements, Dr. Jared or the Hub. Shows each program's commissionable amount and pay at 15% and at a pay-neutral 17%.</p>
     </a>
   </nav>
   <p class="note">Costs come from our pricing model as of November 2026. Some are estimates, and shipping, no-shows and some coaching time are not yet costed, so real margins run a few points lower.</p>

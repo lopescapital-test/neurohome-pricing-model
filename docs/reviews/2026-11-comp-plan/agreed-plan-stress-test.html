@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agreed Plan Stress Test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Same system as the first stress test: one reading column, the agreed rule, summary numbers, one card per sale with
+   draft vs agreed bars, then the month, earnings, the care team pool and what is still open. */
+:root {
+  --bg: #F4F8F9; --surface: #FFFFFF; --sunk: #EEF3F5; --fg: #0F1E24; --muted: #5A6B72; --line: #DAE3E6;
+  --accent: #0089B3; --accent-soft: #E3F5FB;
+  --cost: #7C8F98; --pass: #B9C7CD; --comm: #D2683A; --bonus: #E9A23B; --fees: #8E7CC3; --left: #2A9466;
+  --good: #1F7F55; --good-bg: #E2F3EA; --warn: #9A6412; --warn-bg: #FBF0DB; --bad: #B33A2C; --bad-bg: #FBE6E3;
+  --f-text: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0D1519; --surface: #142025; --sunk: #10191D; --fg: #E3EDF0; --muted: #8DA1A8; --line: #24353B;
+  --accent: #38C6EE; --accent-soft: #123341;
+  --cost: #6B7E87; --pass: #3E5058; --comm: #F08A5D; --bonus: #F2BC5E; --fees: #A897DE; --left: #43BD87;
+  --good: #5ACB98; --good-bg: #133227; --warn: #E7B45A; --warn-bg: #3A2C12; --bad: #F07A6B; --bad-bg: #3D1B17;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0D1519; --surface: #142025; --sunk: #10191D; --fg: #E3EDF0; --muted: #8DA1A8; --line: #24353B;
+  --accent: #38C6EE; --accent-soft: #123341;
+  --cost: #6B7E87; --pass: #3E5058; --comm: #F08A5D; --bonus: #F2BC5E; --fees: #A897DE; --left: #43BD87;
+  --good: #5ACB98; --good-bg: #133227; --warn: #E7B45A; --warn-bg: #3A2C12; --bad: #F07A6B; --bad-bg: #3D1B17;
+  color-scheme: dark }
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--f-text); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 32px 72px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.015em; }
+h2 { font-size: 20px; font-weight: 650; }
+h3 { font-size: 16px; font-weight: 600; }
+p { margin: 0; }
+section { display: grid; gap: 12px; }
+.eyebrow { font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.lede { color: var(--muted); max-width: 72ch; }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 13px; }
+.muted { color: var(--muted); }
+header { display: grid; gap: 10px; }
+
+/* The agreed rule */
+.rule-box { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 10px; padding: 16px 18px; display: grid; gap: 10px; }
+.rule-box ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.rule-box .big { font-size: 22px; font-weight: 700; }
+
+/* Legend */
+.bar-head { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: center; position: sticky; top: 0; z-index: 5; background: var(--bg); padding-block: 10px; border-bottom: 1px solid var(--line); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+
+/* Summary strip */
+.verdicts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 760px) { .verdicts { grid-template-columns: minmax(0, 1fr); } }
+.vbox { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.vbox .k { font-size: 24px; font-weight: 700; font-family: var(--f-mono); }
+.vbox.good .k { color: var(--good); } .vbox.bad .k { color: var(--bad); } .vbox.gap .k { color: var(--warn); }
+.vbox p { font-size: 13.5px; color: var(--muted); }
+
+/* Example cards */
+.cards { display: grid; gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: grid; gap: 14px; min-width: 0; }
+.card-top { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between; }
+.card-top .t { display: grid; gap: 2px; min-width: 0; }
+.type { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.pill.good { background: var(--good-bg); color: var(--good); }
+.pill.bad { background: var(--bad-bg); color: var(--bad); }
+.pill.gap { background: var(--warn-bg); color: var(--warn); }
+.facts { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 13px; color: var(--muted); }
+.facts b { color: var(--fg); font-weight: 600; font-family: var(--f-mono); font-size: 13px; }
+.rows { display: grid; gap: 8px; }
+.row { display: grid; grid-template-columns: 82px minmax(0, 1fr) 230px; gap: 12px; align-items: center; }
+@media (max-width: 760px) { .row { grid-template-columns: 70px minmax(0, 1fr); } .row .stat { grid-column: 2; } }
+.row .lab { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.row.pro .lab { color: var(--accent); }
+.track { position: relative; height: 22px; border-radius: 4px; background: var(--sunk); overflow: hidden; display: flex; }
+.track span { display: block; height: 100%; }
+.track .over { position: absolute; top: 0; bottom: 0; border-left: 2px dashed var(--fg); }
+.stat { display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: 12.5px; color: var(--muted); }
+.stat b { font-family: var(--f-mono); font-weight: 500; color: var(--fg); }
+.why { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px 20px; font-size: 13.5px; }
+@media (max-width: 760px) { .why { grid-template-columns: minmax(0, 1fr); } }
+.why div { display: grid; gap: 2px; }
+.why .h { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.why .h.pro { color: var(--accent); }
+
+/* Tables */
+.tbl { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { padding: 9px 12px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; white-space: normal; min-width: 180px; }
+th { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+td.pro, th.pro { background: color-mix(in srgb, var(--accent) 6%, var(--surface)); }
+tr.tot td { font-weight: 700; }
+tbody tr:last-child td { border-bottom: 0; }
+td .sub { font-size: 12px; color: var(--muted); }
+.neg { color: var(--bad); }
+
+/* Pool and open items */
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+@media (max-width: 760px) { .two { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 8px; align-content: start; }
+.panel ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; font-size: 14px; }
+.flag { background: var(--warn-bg); border: 1px solid color-mix(in srgb, var(--warn) 35%, transparent); border-radius: 10px; padding: 14px 16px; display: grid; gap: 6px; }
+.flag h3 { color: var(--warn); }
+.items { display: grid; gap: 10px; counter-reset: it; }
+.item { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.item::before { counter-increment: it; content: counter(it); font-family: var(--f-mono); font-weight: 500; color: var(--warn); font-size: 18px; }
+.item .body { display: grid; gap: 4px; min-width: 0; }
+.item .fix { font-size: 13px; color: var(--muted); }
+footer { font-size: 12.5px; color: var(--muted); display: grid; gap: 6px; max-width: 90ch; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Internal · updated after the November 20 meeting</div>
+    <h1>Commission Plan Stress Test: the agreed plan</h1>
+    <p class="lede">The commission plan agreed on November 20, run against our real costs, sale by sale. Each bar is one sale as a share of its price: what it costs us, what the Specialist is paid, card fees, and what is left for ads, overhead and profit. The top bar is the board draft as presented (commission only); the bottom bar is the agreed plan.</p>
+  </header>
+
+  <section class="rule-box" aria-labelledby="rule-h">
+    <h2 id="rule-h">What was agreed</h2>
+    <p class="big">10% on everything a Specialist sells, with three exclusions.</p>
+    <ul>
+      <li><strong>One rate.</strong> 10% on first plans, second intensives, Continuing Care and equipment, whether equipment comes in a package or on its own.</li>
+      <li><strong>Never commissioned:</strong> labs, physician or clinical-consult time (Dr. Jared, Dr. Kyle or any licensed clinician who diagnoses), and supplements. Inside a package they come off the price before the 10%.</li>
+      <li><strong>Supplements fund the care team instead.</strong> An amount equal to 10% of supplement revenue (a placeholder; 5% was also discussed) goes into a quarterly PT and PTA pool, paid on team markers. Not at launch: it starts once there is cash for it.</li>
+      <li><strong>Returning families.</strong> A second intensive is built from hours only, with no kit, and pays 10% of its price.</li>
+      <li><strong>Paid on cash.</strong> Commission accrues when the sale is made and is released when the money is collected.</li>
+    </ul>
+  </section>
+
+  <section class="verdicts" aria-label="Summary">
+    <div class="vbox good"><div class="k" id="v-cos"></div><h3>Specialist pay, typical month</h3><p id="v-cos-p"></p></div>
+    <div class="vbox bad"><div class="k" id="v-earn"></div><h3>What a strong Specialist earns</h3><p id="v-earn-p"></p></div>
+    <div class="vbox gap"><div class="k" id="v-pool"></div><h3>Care team pool today</h3><p id="v-pool-p"></p></div>
+  </section>
+
+  <div class="bar-head">
+    <div class="legend">
+      <span><i class="sw" style="background:var(--cost)"></i>Our cost</span>
+      <span><i class="sw" style="background:var(--pass)"></i>Excluded cost (labs, physician, supplements)</span>
+      <span><i class="sw" style="background:var(--comm)"></i>Commission</span>
+      <span><i class="sw" style="background:var(--bonus)"></i>Bonuses</span>
+      <span><i class="sw" style="background:var(--fees)"></i>Card fees 3%</span>
+      <span><i class="sw" style="background:var(--left)"></i>Left for ads, overhead, profit</span>
+    </div>
+  </div>
+
+  <section class="cards" id="cards" aria-label="Sale-by-sale examples"></section>
+
+  <section aria-labelledby="recast-h">
+    <div style="display:grid;gap:6px"><h2 id="recast-h">Every example in one table</h2><p class="lede">Specialist pay per sale under the draft and the agreed plan, and the share of the price left after cost, pay and card fees.</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Sale</th><th>Price</th><th>Gross profit</th><th>Draft pays</th><th class="pro">Agreed pays</th><th>Change</th><th>Left, draft</th><th class="pro">Left, agreed</th></tr></thead>
+      <tbody id="recast"></tbody>
+    </table></div>
+  </section>
+
+  <section aria-labelledby="month-h">
+    <div style="display:grid;gap:6px"><h2 id="month-h">A typical month</h2><p class="lede">The draft deck's own example: 4 families on $48,000 of plans, $6,000 of equipment and $1,000 of supplements, $55,000 collected. Each plan is assumed to include the standard $950 of labs.</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Line</th><th>Draft</th><th class="pro">Agreed</th></tr></thead>
+      <tbody id="month"></tbody>
+    </table></div>
+  </section>
+
+  <section aria-labelledby="earn-h">
+    <div style="display:grid;gap:6px"><h2 id="earn-h">What a Specialist earns</h2><p class="lede" id="earn-lede"></p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Families a month</th><th>Plan revenue</th><th>Draft, plans only</th><th class="pro">Agreed, plans only</th><th class="pro">Agreed, with equipment</th><th class="pro">Agreed, a year</th></tr></thead>
+      <tbody id="earn"></tbody>
+    </table></div>
+  </section>
+
+  <section aria-labelledby="pool-h">
+    <div style="display:grid;gap:6px"><h2 id="pool-h">The care team pool</h2><p class="lede">PTs and PTAs are never paid on revenue, sessions, supplements or equipment. They share a quarterly pool earned as a team.</p></div>
+    <div class="two">
+      <div class="panel">
+        <h3>How it pays</h3>
+        <ul>
+          <li><strong>Three markers:</strong> family satisfaction (NPS) of 80 or higher; clean compliance audits with notes complete; 90% of families complete their plan of care and move into Continuing Care.</li>
+          <li><strong>Payout:</strong> all three markers pay 100% of the team's share, two pay 75%, one or none pay nothing.</li>
+          <li><strong>Split:</strong> each PT and PTA team's share follows its caseload; within a team, 60% to the PT and 40% to the PTA.</li>
+          <li><strong>Unearned money</strong> stays in the pool for later quarters. The company announces each quarter's amount.</li>
+          <li><strong>Start:</strong> not at launch. The board sets a small first pool once there is cash, and raises it as the company grows.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>How big it gets</h3>
+        <p class="muted" style="font-size:13.5px">10% of supplement revenue, paid quarterly.</p>
+        <div class="tbl" style="border:0"><table><thead><tr><th>Supplement revenue a month</th><th>Pool a quarter</th></tr></thead><tbody id="pool"></tbody></table></div>
+      </div>
+    </div>
+    <div class="flag">
+      <h3>Two things to settle before this goes in the plan</h3>
+      <p><strong>Size.</strong> Supplements are only inside the Pre-Intensive and the v1 plans, and the meeting agreed resold supplements carry little margin. At the deck's $1,000 a month, the pool is $300 a quarter, a tenth of the draft's $3,000. The meeting's $100,000-a-month figure would take supplement sales roughly a hundred times larger than the model shows.</p>
+      <p><strong>Who recommends the supplements.</strong> The PTs and PTAs whose pool grows with supplement sales are the ones who recommend supplements. The meeting agreed they cannot be commissioned on supplements; a pool sized by supplement revenue can look like the same incentive one step removed, whether or not the team is told where the money comes from. The November 19 review recommended sizing the pool by completed plans of care instead. Put this question to the attorney before launch.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="open-h">
+    <div style="display:grid;gap:6px"><h2 id="open-h">Not decided in the meeting</h2><p class="lede">These are in the board draft but were not discussed. The final deck holds them out of the plan until the board decides.</p></div>
+    <div class="items">
+      <div class="item"><div class="body"><h3>Plan B: $45,000 base plus a percentage</h3><p>The meeting worked only the commission-only plan.</p><p class="fix">If Plan B stays, it needs a rate on the same net basis. At 10% commission-only, a base-plus plan would pay roughly 4% on top of the base.</p></div></div>
+      <div class="item"><div class="body"><h3>The monthly stretch goal (17% / 12% after $125,000)</h3><p>Set when the base rate was 15%. It no longer lines up with a flat 10%.</p><p class="fix">Drop it, or reset it relative to 10% (for example 12% after the goal).</p></div></div>
+      <div class="item"><div class="body"><h3>Bonuses: $250 bundle, 1.5% paid in full, $1,000 top Specialist</h3><p>Equipment now earns 10% in or out of a package, which does the bundle bonus's job.</p><p class="fix">Recommend dropping the bundle bonus; decide the other two.</p></div></div>
+      <div class="item"><div class="body"><h3>Who else is in the pool</h3><p>An appointment scheduler was mentioned but not decided.</p></div></div>
+      <div class="item"><div class="body"><h3>Prices the model has not caught up with</h3><p>The tabletop panel is now $800 with about $405 landed by air; the model still has $850 and $318, with no freight. Labs were described as $1,500 held per plan plus $500 to Dr. Jared; the model's Clinical and Guided plans carry $950 of labs. The Pre-Intensive is being redesigned.</p><p class="fix">Update model.js, then rerun this page.</p></div></div>
+    </div>
+  </section>
+
+  <footer>
+    <div><strong>Costs.</strong> From the NeuroHome pricing model (model.js). Some are assumed: coordinator $40/hr, Hub $0, supplements with no recorded cost at 50% of list. Program kit costs do not include freight, and shipping, no-shows and the coach assigned to Clinical are not costed, so real margins are a few points lower. Card fees are 3% of price.</div>
+    <div><strong>Draft plan.</strong> NeuroSage Home Sales and Care Team Compensation Plan, board review draft, November 2026, Plan A (commission only). The Pre-Intensive draft figure includes the $250 bundle bonus and 1.5% paid-in-full bonus. The Dr. Jared bundle had no rate in the draft; shown at 15%.</div>
+    <div><strong>Reproduce.</strong> <code>node docs/reviews/2026-11-comp-plan/agreed-plan.js --html</code> rewrites the numbers on this page from model.js.</div>
+  </footer>
+</div>
+
+<script>
+/* DATA:START */
+const DATA = {"rate":0.1,"card":0.03,"poolRate":0.1,"examples":[{"id":"clin","kind":"First therapy plan","label":"Clinical, 60-minute sessions","sub":"Clinical v2","price":14500,"cogs":4945,"pass":950,"gp":9555,"gm":65.89655172413794,"fees":435,"excluded":950,"draft":{"total":2175,"ofGP":22.762951334379906,"left":6945,"leftPct":47.89655172413793,"comm":2175,"bonus":0},"agreed":{"total":1355,"ofGP":14.181057038199896,"left":7765,"leftPct":53.55172413793103},"pool":0,"note":""},{"id":"guid","kind":"First therapy plan","label":"Guided, 4 days a week, 60 min","sub":"Guided Intensive v2","price":10850,"cogs":3780,"pass":950,"gp":7070,"gm":65.16129032258064,"fees":325.5,"excluded":950,"draft":{"total":1628,"ofGP":23.01980198019802,"left":5117,"leftPct":47.16129032258065,"comm":1627.5,"bonus":0},"agreed":{"total":990,"ofGP":14.002828854314004,"left":5754.5,"leftPct":53.036866359447},"pool":0,"note":""},{"id":"well","kind":"First therapy plan","label":"Wellness, 1× a week, 60 min","sub":"Wellness v2, first quarter","price":4850,"cogs":1340,"pass":0,"gp":3510,"gm":72.37113402061856,"fees":145.5,"excluded":0,"draft":{"total":728,"ofGP":20.726495726495727,"left":2637,"leftPct":54.37113402061856,"comm":727.5,"bonus":0},"agreed":{"total":485,"ofGP":13.817663817663817,"left":2879.5,"leftPct":59.371134020618555},"pool":0,"note":""},{"id":"pre","kind":"First therapy plan, mostly pass-through","label":"Pre-Intensive","sub":"labs, physician hour and supplements inside","price":5400,"cogs":3558,"pass":3040,"gp":1842,"gm":34.11111111111111,"fees":162,"excluded":3040,"draft":{"total":1141,"ofGP":61.94353963083606,"left":539,"leftPct":9.981481481481481,"comm":810,"bonus":331},"agreed":{"total":236,"ofGP":12.812160694896852,"left":1444,"leftPct":26.740740740740744},"pool":0,"note":""},{"id":"second","kind":"Second intensive, returning family","label":"Second intensive, hours only","sub":"family already has the kit; $10,000 example","price":10000,"cogs":1785,"pass":0,"gp":8215,"gm":82.15,"fees":300,"excluded":0,"draft":{"total":1000,"ofGP":12.172854534388314,"left":6915,"leftPct":69.15,"comm":1000,"bonus":0},"agreed":{"total":1000,"ofGP":12.172854534388314,"left":6915,"leftPct":69.15},"pool":0,"note":"Cost is the therapy hours of a Guided 4-day 60-minute plan."},{"id":"cc","kind":"Continued therapy plan","label":"Continuing Care, 12 sessions + 1 PT","sub":"per quarter","price":1440,"cogs":550,"pass":0,"gp":890,"gm":61.80555555555556,"fees":43.199999999999996,"excluded":0,"draft":{"total":144,"ofGP":16.179775280898877,"left":702.8,"leftPct":48.80555555555555,"comm":144,"bonus":0},"agreed":{"total":144,"ofGP":16.179775280898877,"left":702.8,"leftPct":48.80555555555555},"pool":0,"note":""},{"id":"ark","kind":"Equipment","label":"Tabletop green light panel (Ark)","sub":"sold on its own","price":800,"cogs":405,"pass":0,"gp":395,"gm":49.375,"fees":24,"excluded":0,"draft":{"total":79,"ofGP":20,"left":292,"leftPct":36.5,"comm":79,"bonus":0},"agreed":{"total":80,"ofGP":20.253164556962027,"left":291,"leftPct":36.375},"pool":0,"note":"Price $800 and landed cost $405 by air ($315 unit, $65 freight, $25 to the family), from the meeting. By sea, freight is about $25 instead of $65."},{"id":"supp","kind":"Supplement","label":"Gut Feeling Powder","sub":"sold on its own","price":165,"cogs":80,"pass":80,"gp":85,"gm":51.515151515151516,"fees":4.95,"excluded":80,"draft":{"total":17,"ofGP":19.411764705882355,"left":63.55,"leftPct":38.515151515151516,"comm":16.5,"bonus":0},"agreed":{"total":0,"ofGP":0,"left":80.05,"leftPct":48.51515151515151},"pool":16.5,"note":""},{"id":"adrena","kind":"Supplement, below cost","label":"AdrenaCalm-SE","sub":"sold on its own; costs more than its price","price":50,"cogs":65,"pass":65,"gp":-15,"gm":-30,"fees":1.5,"excluded":65,"draft":{"total":5,"ofGP":null,"left":-21.5,"leftPct":-43,"comm":5,"bonus":0},"agreed":{"total":0,"ofGP":null,"left":-16.5,"leftPct":-33},"pool":5,"note":""},{"id":"lab","kind":"Lab","label":"Gut Zoomer","sub":"sold at cost plus a little","price":600,"cogs":550,"pass":550,"gp":50,"gm":8.333333333333332,"fees":18,"excluded":550,"draft":{"total":0,"ofGP":0,"left":32,"leftPct":5.333333333333334,"comm":0,"bonus":0},"agreed":{"total":0,"ofGP":0,"left":32,"leftPct":5.333333333333334},"pool":0,"note":""},{"id":"jared","kind":"Physician and supplement credit","label":"Dr. Jared bundle","sub":"$500 physician hour + $1,500 supplement credit","price":2000,"cogs":1250,"pass":1250,"gp":750,"gm":37.5,"fees":60,"excluded":2000,"draft":{"total":300,"ofGP":40,"left":390,"leftPct":19.5,"comm":300,"bonus":0},"agreed":{"total":0,"ofGP":0,"left":690,"leftPct":34.5},"pool":0,"note":""}],"month":{"collected":55000,"therapy":48000,"labs":3800,"equip":6000,"equipMargin":3600,"supp":1000,"fees":1650,"draft":{"base":0,"therapy":7200,"equip":720,"supp":100,"bonus":860,"total":8880},"agreed":{"base":0,"therapy":4420,"equip":600,"supp":0,"bonus":0,"total":5020},"pool":100,"draftShare":16.145454545454545,"agreedShare":9.127272727272727,"draftCOS":19.145454545454545,"agreedCOS":12.127272727272727},"earnings":[{"families":2,"therapy":24000,"draftA":3600,"agreedTherapy":2210,"agreedAll":2510,"agreedYear":30120},{"families":3,"therapy":36000,"draftA":5400,"agreedTherapy":3315.0000000000005,"agreedAll":3765.0000000000005,"agreedYear":45180.00000000001},{"families":4,"therapy":48000,"draftA":7200,"agreedTherapy":4420,"agreedAll":5020,"agreedYear":60240},{"families":5,"therapy":60000,"draftA":9000,"agreedTherapy":5525,"agreedAll":6275,"agreedYear":75300},{"families":6,"therapy":72000,"draftA":10800,"agreedTherapy":6630.000000000001,"agreedAll":7530.000000000001,"agreedYear":90360.00000000001},{"families":7,"therapy":84000,"draftA":12600,"agreedTherapy":7735.000000000001,"agreedAll":8785,"agreedYear":105420}],"pool":[{"monthly":1000,"quarter":300},{"monthly":5000,"quarter":1500},{"monthly":10000,"quarter":3000},{"monthly":50000,"quarter":15000},{"monthly":100000,"quarter":30000}],"catalogue":[{"sec":"v2c","name":"60-minute sessions","price":14500,"excluded":950,"comm":1355,"cogs":4945},{"sec":"v2c","name":"90-minute sessions","price":18400,"excluded":950,"comm":1745,"cogs":6310},{"sec":"v2c","name":"120-minute sessions","price":22350,"excluded":950,"comm":2140,"cogs":7675},{"sec":"v2g","name":"4 days a week, 60-minute sessions","price":10850,"excluded":950,"comm":990,"cogs":3780},{"sec":"v2g","name":"4 days a week, 90-minute sessions","price":12150,"excluded":950,"comm":1120,"cogs":4260},{"sec":"v2g","name":"4 days a week, 120-minute sessions","price":13450,"excluded":950,"comm":1250,"cogs":4740},{"sec":"v2g","name":"5 days a week, 60-minute sessions","price":11700,"excluded":950,"comm":1075,"cogs":4100},{"sec":"v2g","name":"5 days a week, 90-minute sessions","price":13450,"excluded":950,"comm":1250,"cogs":4740},{"sec":"v2g","name":"5 days a week, 120-minute sessions","price":15150,"excluded":950,"comm":1420,"cogs":5380},{"sec":"v2w","name":"1× a week, 45 min","price":4400,"excluded":0,"comm":440,"cogs":1220},{"sec":"v2w","name":"1× a week, 60 min","price":4850,"excluded":0,"comm":485,"cogs":1340},{"sec":"v2w","name":"1× a week, 90 min","price":5750,"excluded":0,"comm":575,"cogs":1580},{"sec":"v2w","name":"2× a week, 45 min","price":5750,"excluded":0,"comm":575,"cogs":1580},{"sec":"v2w","name":"2× a week, 60 min","price":6600,"excluded":0,"comm":660,"cogs":1820},{"sec":"v2w","name":"2× a week, 90 min","price":8400,"excluded":0,"comm":840,"cogs":2300},{"sec":"v2w","name":"3× a week, 45 min","price":7050,"excluded":0,"comm":705,"cogs":1940},{"sec":"v2w","name":"3× a week, 60 min","price":8400,"excluded":0,"comm":840,"cogs":2300},{"sec":"v2w","name":"3× a week, 90 min","price":11050,"excluded":0,"comm":1105,"cogs":3020},{"sec":"v2wm","name":"1× a week, 45 min","price":460,"excluded":0,"comm":46,"cogs":120},{"sec":"v2wm","name":"1× a week, 60 min","price":600,"excluded":0,"comm":60,"cogs":160},{"sec":"v2wm","name":"1× a week, 90 min","price":900,"excluded":0,"comm":90,"cogs":240},{"sec":"v2wm","name":"2× a week, 45 min","price":920,"excluded":0,"comm":92,"cogs":240},{"sec":"v2wm","name":"2× a week, 60 min","price":1200,"excluded":0,"comm":120,"cogs":320},{"sec":"v2wm","name":"2× a week, 90 min","price":1800,"excluded":0,"comm":180,"cogs":480},{"sec":"v2wm","name":"3× a week, 45 min","price":1380,"excluded":0,"comm":138,"cogs":360},{"sec":"v2wm","name":"3× a week, 60 min","price":1800,"excluded":0,"comm":180,"cogs":480},{"sec":"v2wm","name":"3× a week, 90 min","price":2700,"excluded":0,"comm":270,"cogs":720},{"sec":"v2a","name":"Dr. Jared bundle","price":2000,"excluded":2000,"comm":0,"cogs":1250},{"sec":"v1c","name":"PT 3× a week","price":10000,"excluded":1490,"comm":851,"cogs":4505},{"sec":"v1c","name":"PT 4× a week","price":11400,"excluded":1490,"comm":991,"cogs":5135},{"sec":"v1c","name":"PT 5× a week","price":12850,"excluded":1490,"comm":1136,"cogs":5765},{"sec":"v1g","name":"PT 1 + coordinator 2× a week","price":8000,"excluded":1240,"comm":676,"cogs":3265},{"sec":"v1g","name":"PT 1 + coordinator 3× a week","price":8550,"excluded":1240,"comm":731,"cogs":3505},{"sec":"v1g","name":"PT 1 + coordinator 4× a week","price":9050,"excluded":1240,"comm":781,"cogs":3745},{"sec":"v1w","name":"8 coach sessions","price":3900,"excluded":0,"comm":390,"cogs":1100},{"sec":"v1w","name":"16 coach sessions","price":4650,"excluded":0,"comm":465,"cogs":1340},{"sec":"v1w","name":"20 coach sessions","price":5000,"excluded":0,"comm":500,"cogs":1460},{"sec":"v1w","name":"24 coach sessions","price":5350,"excluded":0,"comm":535,"cogs":1580},{"sec":"pre","name":"Pre-Intensive","price":5400,"excluded":3040,"comm":236,"cogs":3558},{"sec":"pre","name":"Eva","price":1200,"excluded":0,"comm":120,"cogs":0},{"sec":"cc","name":"24 sessions + 3 PT assessments, 60 min","price":3120,"excluded":0,"comm":312,"cogs":1170},{"sec":"cc","name":"24 sessions + 1 PT assessment, 60 min","price":2640,"excluded":0,"comm":264,"cogs":1030},{"sec":"cc","name":"18 sessions + 3 PT assessments, 60 min","price":2520,"excluded":0,"comm":252,"cogs":930},{"sec":"cc","name":"18 sessions + 1 PT assessment, 60 min","price":2040,"excluded":0,"comm":204,"cogs":790},{"sec":"cc","name":"12 sessions + 3 PT assessments, 60 min","price":1920,"excluded":0,"comm":192,"cogs":690},{"sec":"cc","name":"12 sessions + 1 PT assessment, 60 min","price":1440,"excluded":0,"comm":144,"cogs":550},{"sec":"cc","name":"6 sessions + 3 PT assessments, 60 min","price":1320,"excluded":0,"comm":132,"cogs":450},{"sec":"cc","name":"6 sessions + 1 PT assessment, 60 min","price":840,"excluded":0,"comm":84,"cogs":310},{"sec":"cc","name":"3 sessions + 3 PT assessments, 60 min","price":1020,"excluded":0,"comm":102,"cogs":330},{"sec":"cc","name":"3 sessions + 1 PT assessment, 60 min","price":540,"excluded":0,"comm":54,"cogs":190},{"sec":"cc","name":"24 sessions + 3 PT assessments, 90 min","price":4680,"excluded":0,"comm":468,"cogs":1755},{"sec":"cc","name":"24 sessions + 1 PT assessment, 90 min","price":3960,"excluded":0,"comm":396,"cogs":1545},{"sec":"cc","name":"18 sessions + 3 PT assessments, 90 min","price":3780,"excluded":0,"comm":378,"cogs":1395},{"sec":"cc","name":"18 sessions + 1 PT assessment, 90 min","price":3060,"excluded":0,"comm":306,"cogs":1185},{"sec":"cc","name":"12 sessions + 3 PT assessments, 90 min","price":2880,"excluded":0,"comm":288,"cogs":1035},{"sec":"cc","name":"12 sessions + 1 PT assessment, 90 min","price":2160,"excluded":0,"comm":216,"cogs":825},{"sec":"cc","name":"6 sessions + 3 PT assessments, 90 min","price":1980,"excluded":0,"comm":198,"cogs":675},{"sec":"cc","name":"6 sessions + 1 PT assessment, 90 min","price":1260,"excluded":0,"comm":126,"cogs":465},{"sec":"cc","name":"3 sessions + 3 PT assessments, 90 min","price":1530,"excluded":0,"comm":153,"cogs":495},{"sec":"cc","name":"3 sessions + 1 PT assessment, 90 min","price":810,"excluded":0,"comm":81,"cogs":285},{"sec":"time","name":"PT time, 30 minutes","price":120,"excluded":0,"comm":12,"cogs":35},{"sec":"time","name":"Coach time, 30 minutes","price":50,"excluded":0,"comm":5,"cogs":20},{"sec":"time","name":"Dr. Jared time, 30 minutes","price":250,"excluded":250,"comm":0,"cogs":250},{"sec":"time","name":"Dr. Kyle time, 30 minutes","price":250,"excluded":0,"comm":0,"cogs":0},{"sec":"time","name":"Extra weekly support session","price":500,"excluded":0,"comm":50,"cogs":240},{"sec":"phys","name":"Written report","price":250,"excluded":250,"comm":0,"cogs":250},{"sec":"phys","name":"Full hour, live","price":500,"excluded":500,"comm":0,"cogs":500},{"sec":"phys","name":"Upgrade written report to full hour","price":250,"excluded":250,"comm":0,"cogs":250},{"sec":"labs","name":"Gut Zoomer","price":600,"excluded":550,"comm":0,"cogs":550},{"sec":"labs","name":"Organic Acids","price":450,"excluded":400,"comm":0,"cogs":400},{"sec":"labs","name":"Total Tox Burden","price":775,"excluded":700,"comm":0,"cogs":700},{"sec":"labs","name":"Neural Zoomer Plus","price":500,"excluded":450,"comm":0,"cogs":450},{"sec":"labs","name":"Mycotoxins","price":475,"excluded":427,"comm":0,"cogs":427},{"sec":"kit","name":"Green Light LED Panel","price":850,"excluded":0,"comm":85,"cogs":318},{"sec":"kit","name":"Green Light LED Handheld","price":650,"excluded":0,"comm":65,"cogs":247},{"sec":"kit","name":"Red Light LED Handheld","price":450,"excluded":0,"comm":45,"cogs":120},{"sec":"kit","name":"Blue color therapy glasses","price":30,"excluded":0,"comm":3,"cogs":20},{"sec":"kit","name":"Red color therapy glasses","price":30,"excluded":0,"comm":3,"cogs":20},{"sec":"kit","name":"Essential oils","price":30,"excluded":0,"comm":3,"cogs":15},{"sec":"kit","name":"Vibration tool","price":80,"excluded":0,"comm":8,"cogs":40},{"sec":"kit","name":"SaeboStim","price":560,"excluded":0,"comm":56,"cogs":250},{"sec":"kit","name":"3B laser","price":8000,"excluded":0,"comm":800,"cogs":4000},{"sec":"kit","name":"Hub, monthly after month 2","price":50,"excluded":0,"comm":5,"cogs":0},{"sec":"supp","name":"Intrakid","price":115,"excluded":45,"comm":0,"cogs":45},{"sec":"supp","name":"Gut Feeling Powder","price":165,"excluded":80,"comm":0,"cogs":80},{"sec":"supp","name":"benaGene Lozenges","price":59,"excluded":30,"comm":0,"cogs":30},{"sec":"supp","name":"AdrenaCalm-SE KR-73","price":50,"excluded":65,"comm":0,"cogs":65},{"sec":"supp","name":"Gut Feeling Travel Sachets","price":185,"excluded":92.5,"comm":0,"cogs":92.5},{"sec":"supp","name":"Gut Feeling Capsules","price":185,"excluded":92.5,"comm":0,"cogs":92.5},{"sec":"supp","name":"benaGene Capsules","price":49,"excluded":24.5,"comm":0,"cogs":24.5},{"sec":"supp","name":"AdrenaStim-SE KR-73","price":47,"excluded":23.49,"comm":0,"cogs":23.49},{"sec":"supp","name":"Advanced TUDCA","price":90,"excluded":44.975,"comm":0,"cogs":44.975},{"sec":"supp","name":"Argentyn 23 Sinus Relief Spray","price":23,"excluded":11.495,"comm":0,"cogs":11.495},{"sec":"supp","name":"B12 Max K-56","price":28,"excluded":13.99,"comm":0,"cogs":13.99},{"sec":"supp","name":"Calcium D-Glucarate","price":86,"excluded":42.995,"comm":0,"cogs":42.995},{"sec":"supp","name":"CT-Zyme","price":57,"excluded":28.475,"comm":0,"cogs":28.475},{"sec":"supp","name":"BC-ATP","price":77,"excluded":38.475,"comm":0,"cogs":38.475},{"sec":"supp","name":"Biotoxin Binder","price":77,"excluded":38.475,"comm":0,"cogs":38.475},{"sec":"supp","name":"Bowel Mover","price":52,"excluded":25.975,"comm":0,"cogs":25.975},{"sec":"supp","name":"Carboxy","price":90,"excluded":44.975,"comm":0,"cogs":44.975},{"sec":"supp","name":"CT-Minerals","price":57,"excluded":28.475,"comm":0,"cogs":28.475},{"sec":"supp","name":"HM-ET Binder","price":88,"excluded":43.975,"comm":0,"cogs":43.975},{"sec":"supp","name":"KL-Support","price":62,"excluded":30.975,"comm":0,"cogs":30.975},{"sec":"supp","name":"Lymphactiv","price":52,"excluded":25.975,"comm":0,"cogs":25.975},{"sec":"supp","name":"Para 1","price":47,"excluded":23.475,"comm":0,"cogs":23.475},{"sec":"supp","name":"Para 2","price":54,"excluded":26.975,"comm":0,"cogs":26.975},{"sec":"supp","name":"Para 3","price":54,"excluded":26.975,"comm":0,"cogs":26.975},{"sec":"supp","name":"Para 4","price":63,"excluded":31.475,"comm":0,"cogs":31.475},{"sec":"supp","name":"Dopaflo K-49","price":36,"excluded":17.99,"comm":0,"cogs":17.99},{"sec":"supp","name":"Dopatone Active K-41","price":48,"excluded":23.99,"comm":0,"cogs":23.99},{"sec":"supp","name":"Gabatone Active K-39","price":46,"excluded":22.99,"comm":0,"cogs":22.99},{"sec":"supp","name":"HistDAO","price":62,"excluded":30.995,"comm":0,"cogs":30.995},{"sec":"supp","name":"MegaSporeBiotic","price":67,"excluded":33.125,"comm":0,"cogs":33.125},{"sec":"supp","name":"Quicksilver Melatonin","price":45,"excluded":22.5,"comm":0,"cogs":22.5},{"sec":"supp","name":"NeurO2 K-45","price":50,"excluded":24.99,"comm":0,"cogs":24.99},{"sec":"supp","name":"NeuroFlam-NT K-77","price":65,"excluded":32.49,"comm":0,"cogs":32.49},{"sec":"supp","name":"Organic Spore Powder","price":126,"excluded":62.625,"comm":0,"cogs":62.625},{"sec":"supp","name":"OptiMag Neuro","price":79,"excluded":39.495,"comm":0,"cogs":39.495},{"sec":"supp","name":"Oxicell-SE KR-70","price":50,"excluded":24.99,"comm":0,"cogs":24.99},{"sec":"supp","name":"Serotone Active K-38","price":68,"excluded":33.99,"comm":0,"cogs":33.99},{"sec":"supp","name":"Tributyrin 350 Active K-132","price":57,"excluded":28.49,"comm":0,"cogs":28.49},{"sec":"supp","name":"Tro Just Blue","price":27,"excluded":13.5,"comm":0,"cogs":13.5},{"sec":"supp","name":"Tro+","price":34,"excluded":17,"comm":0,"cogs":17},{"sec":"supp","name":"ViraDChem Binder","price":68,"excluded":33.975,"comm":0,"cogs":33.975},{"sec":"supp","name":"Monolaurin-Avail","price":48,"excluded":23.875,"comm":0,"cogs":23.875},{"sec":"supp","name":"AC-Glutathione K-88","price":63,"excluded":31.49,"comm":0,"cogs":31.49},{"sec":"supp","name":"Liqua-D K-87","price":22,"excluded":10.99,"comm":0,"cogs":10.99},{"sec":"supp","name":"Brain-E DHA Liquid K-53","price":60,"excluded":29.99,"comm":0,"cogs":29.99},{"sec":"supp","name":"Creatine Monohydrate 450 g","price":33,"excluded":16.375,"comm":0,"cogs":16.375},{"sec":"supp","name":"Phyto Brain-E K-54","price":90,"excluded":44.99,"comm":0,"cogs":44.99},{"sec":"supp","name":"All Thiamine","price":17,"excluded":8.495,"comm":0,"cogs":8.495},{"sec":"supp","name":"S-Acetyl Glutathione","price":75,"excluded":37.495,"comm":0,"cogs":37.495},{"sec":"supp","name":"Carnitine Synergy","price":79,"excluded":39.375,"comm":0,"cogs":39.375},{"sec":"supp","name":"Folinic Acid Lozenges","price":20,"excluded":10,"comm":0,"cogs":10},{"sec":"supp","name":"Resvero-SE Active K-125","price":76,"excluded":37.99,"comm":0,"cogs":37.99},{"sec":"supp","name":"Repairvite-SE K-98","price":52,"excluded":25.99,"comm":0,"cogs":25.99},{"sec":"supp","name":"Silvercillin 16 oz","price":72,"excluded":36,"comm":0,"cogs":36},{"sec":"supp","name":"MitoActive","price":90,"excluded":44.975,"comm":0,"cogs":44.975},{"sec":"supp","name":"Myc-P","price":80,"excluded":39.995,"comm":0,"cogs":39.995},{"sec":"supp","name":"Elim-a-cand","price":80,"excluded":39.995,"comm":0,"cogs":39.995},{"sec":"supp","name":"Crypto-Plus","price":80,"excluded":39.995,"comm":0,"cogs":39.995},{"sec":"supp","name":"Nitric Balance K-62","price":52,"excluded":25.99,"comm":0,"cogs":25.99},{"sec":"supp","name":"Core Nutrients","price":90,"excluded":44.975,"comm":0,"cogs":44.975}]};
+/* DATA:END */
+const TEXT = {
+  clin: { now: 'The draft paid 15% of the whole price, including $950 of labs we pass through at cost.', fix: '10% of $13,550 (price minus labs). The Specialist earns $820 less; the company keeps about 6 points more of the price.' },
+  guid: { now: '15% of the full price, labs included.', fix: '10% of $9,900 (price minus labs).' },
+  well: { now: 'No exclusions inside. 15% of the price.', fix: '10% of the price. Nothing to take out.' },
+  pre: { now: 'Labs, the physician hour and supplements are $3,040 of the $5,400 price. 15% of the full price plus both bonuses paid the Specialist 62% of the gross profit.', fix: '10% of $2,360. The low margin is a pricing problem; the Pre-Intensive is being redesigned.' },
+  second: { now: 'A continued plan at 10% in the draft.', fix: '10%: $1,000 on a $10,000 hours-only plan, the meeting’s example. No kit, so no equipment cost.' },
+  cc: { now: '10% in the draft.', fix: '10%. No change.' },
+  ark: { now: '20% of gross margin: $79 on $395 of margin.', fix: '10% of the $800 price: $80. The same money, and simpler to track. It stays fair only while the panel keeps about 50% margin; by sea the margin is higher.' },
+  supp: { now: '10% of the price.', fix: 'No Specialist commission. 10% of the price ($17) goes to the care team pool instead.' },
+  adrena: { now: 'Costs us $65, sells for $50, and the draft still paid $5 on it.', fix: 'No commission. The product itself loses money: fix the cost or the price.' },
+  lab: { now: 'No commission.', fix: 'No commission. Sold at about cost by design.' },
+  jared: { now: 'No rate in the draft; at 15% it would pay $300.', fix: 'No commission. It is all physician time and supplement credit.' },
+};
+const money = n => (n < 0 ? '−$' : '$') + Math.abs(Math.round(n)).toLocaleString('en-US');
+const pct = n => (n < 0 ? '−' : '') + Math.abs(n).toFixed(1) + '%';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const $ = id => document.getElementById(id);
+
+function verdict(d) {
+  if (d.gp < 0) return ['bad', 'Product loses money'];
+  if (d.agreed.total === 0) return ['gap', 'No commission'];
+  return ['good', 'Holds'];
+}
+function bar(d, o) {
+  const own = d.cogs - d.pass;
+  const segs = [[own, 'var(--cost)', 'Our cost'], [d.pass, 'var(--pass)', 'Excluded cost'], [o.comm ?? o.total, 'var(--comm)', 'Commission'], [o.bonus || 0, 'var(--bonus)', 'Bonuses'], [d.fees, 'var(--fees)', 'Card fees'], [Math.max(0, o.left), 'var(--left)', 'Left']];
+  const total = Math.max(d.price, own + d.pass + (o.comm ?? o.total) + (o.bonus || 0) + d.fees);
+  const label = segs.filter(s => s[0] > 0).map(s => `${s[2]} ${money(s[0])}`).join(', ');
+  const over = total > d.price ? `<i class="over" style="left:${(d.price / total * 100).toFixed(2)}%" title="Price"></i>` : '';
+  return `<div class="track" role="img" aria-label="${esc(label)}">${segs.map(s => s[0] > 0 ? `<span style="width:${(s[0] / total * 100).toFixed(2)}%;background:${s[1]}" title="${esc(s[2])}: ${money(s[0])}"></span>` : '').join('')}${over}</div>`;
+}
+function stat(o) {
+  const share = o.ofGP == null ? 'n/a' : pct(o.ofGP);
+  return `<div class="stat"><span>Paid <b>${money(o.total)}</b></span><span>of profit <b>${share}</b></span><span>Left <b class="${o.left < 0 ? 'neg' : ''}">${pct(o.leftPct)}</b></span></div>`;
+}
+
+const E = DATA.examples, Mo = DATA.month;
+$('cards').innerHTML = E.map(d => {
+  const v = verdict(d), t = TEXT[d.id];
+  return `<article class="card" aria-labelledby="h-${d.id}">
+    <div class="card-top"><div class="t"><span class="type">${esc(d.kind)}</span><h3 id="h-${d.id}">${esc(d.label)} <span class="muted" style="font-weight:400">· ${esc(d.sub)}</span></h3></div><span class="pill ${v[0]}">${v[1]}</span></div>
+    <div class="facts"><span>Price <b>${money(d.price)}</b></span><span>Our cost <b>${money(d.cogs)}</b></span>${d.excluded && d.agreed.total ? `<span>Excluded <b>${money(d.excluded)}</b></span>` : ''}<span>Gross profit <b class="${d.gp < 0 ? 'neg' : ''}">${money(d.gp)}</b> (${pct(d.gm)})</span>${d.pool ? `<span>To care team pool <b>${money(d.pool)}</b></span>` : ''}</div>
+    <div class="rows">
+      <div class="row"><span class="lab">Draft</span>${bar(d, d.draft)}${stat(d.draft)}</div>
+      <div class="row pro"><span class="lab">Agreed</span>${bar(d, d.agreed)}${stat(d.agreed)}</div>
+    </div>
+    <div class="why"><div><span class="h">Draft</span><p>${esc(t.now)}</p></div><div><span class="h pro">Agreed</span><p>${esc(t.fix)}${d.note ? ' <span class="muted">' + esc(d.note) + '</span>' : ''}</p></div></div>
+  </article>`;
+}).join('');
+
+$('recast').innerHTML = E.map(d => {
+  const delta = d.agreed.total - d.draft.total;
+  return `<tr><td>${esc(d.label)}<div class="sub">${esc(d.kind)}</div></td><td class="num">${money(d.price)}</td><td class="num ${d.gp < 0 ? 'neg' : ''}">${money(d.gp)}</td>
+    <td class="num">${money(d.draft.total)}</td><td class="num pro">${money(d.agreed.total)}</td>
+    <td class="num ${delta < 0 ? 'neg' : ''}">${delta === 0 ? '<span class="muted">none</span>' : (delta > 0 ? '+' : '−') + money(Math.abs(delta))}</td>
+    <td class="num ${d.draft.left < 0 ? 'neg' : ''}">${pct(d.draft.leftPct)}</td><td class="num pro ${d.agreed.left < 0 ? 'neg' : ''}">${pct(d.agreed.leftPct)}</td></tr>`;
+}).join('');
+
+const mrow = (l, a, b, cls = '') => `<tr class="${cls}"><td>${l}</td><td class="num">${a}</td><td class="num pro">${b}</td></tr>`;
+$('month').innerHTML = [
+  mrow(`Plans ($48,000; $${(Mo.therapy - Mo.labs).toLocaleString('en-US')} without labs)`, `${money(Mo.draft.therapy)} <span class="muted">at 15%</span>`, `${money(Mo.agreed.therapy)} <span class="muted">at 10% of net</span>`),
+  mrow('Equipment ($6,000; $3,600 margin)', `${money(Mo.draft.equip)} <span class="muted">20% of margin</span>`, `${money(Mo.agreed.equip)} <span class="muted">10% of price</span>`),
+  mrow('Supplements ($1,000)', money(Mo.draft.supp), '$0'),
+  mrow('Bundle and paid-in-full bonuses', money(Mo.draft.bonus), '<span class="muted">held</span>'),
+  mrow('Specialist pay', money(Mo.draft.total), money(Mo.agreed.total), 'tot'),
+  mrow('Share of collected revenue', pct(Mo.draftShare), pct(Mo.agreedShare), 'tot'),
+  mrow('Card and financing fees (3%)', money(Mo.fees), money(Mo.fees)),
+  mrow('Cost of sale, share of revenue', pct(Mo.draftCOS), pct(Mo.agreedCOS), 'tot'),
+  mrow('Set aside for the care team pool', '<span class="muted">$3,000 a quarter, fixed</span>', `${money(Mo.pool)} <span class="muted">(10% of supplements)</span>`),
+].join('');
+
+$('earn').innerHTML = DATA.earnings.map(e => `<tr><td>${e.families}</td><td class="num">${money(e.therapy)}</td><td class="num">${money(e.draftA)}</td><td class="num pro">${money(e.agreedTherapy)}</td><td class="num pro">${money(e.agreedAll)}</td><td class="num pro">${money(e.agreedYear)}</td></tr>`).join('');
+const e5 = DATA.earnings.find(e => e.families === 5), e7 = DATA.earnings.find(e => e.families === 7);
+$('earn-lede').textContent = `The draft's assumption of a $12,000 average first plan, each with $950 of labs, plus $1,500 of equipment per family. The draft said 5 to 7 families a month earns $150,000 to $175,000 a year; at 10% the same Specialist earns about ${money(Math.round(e5.agreedYear / 1000) * 1000)} to ${money(Math.round(e7.agreedYear / 1000) * 1000)}, before any bonuses the board keeps.`;
+
+$('pool').innerHTML = DATA.pool.map(p => `<tr><td class="num" style="text-align:left">${money(p.monthly)}</td><td class="num">${money(p.quarter)}</td></tr>`).join('');
+
+$('v-cos').textContent = `${pct(Mo.draftShare)} → ${pct(Mo.agreedShare)}`;
+$('v-cos-p').textContent = `Specialist pay falls from ${money(Mo.draft.total)} to ${money(Mo.agreed.total)} of $55,000 collected. With card fees, cost of sale is ${pct(Mo.agreedCOS)}, down from ${pct(Mo.draftCOS)}. No example sale pays more than the draft did, except the panel, by $1.`;
+$('v-earn').textContent = `~${money(Math.round(e5.agreedYear / 1000) * 1000)}–${money(Math.round(e7.agreedYear / 1000) * 1000)}`;
+$('v-earn-p').textContent = 'A year, at 5 to 7 families a month. The draft promised $150,000 to $175,000. Recruiting pitches and the earnings slide have to change with the rate.';
+$('v-pool').textContent = `${money(Mo.pool * 3)} a quarter`;
+$('v-pool-p').textContent = 'At the deck’s $1,000 a month of supplements. The draft set $3,000. The pool only matters once supplement sales are much larger.';
+</script>
+</body>
+</html>
