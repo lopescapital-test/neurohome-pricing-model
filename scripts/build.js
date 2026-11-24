@@ -43,7 +43,8 @@ const pagesOut = path.join(root, 'docs', 'margin-book', 'index.html');
 const pages = inlined.replace('<title>', '<!-- Built by scripts/build.js from index.html, model.js and app.js. Edit those, not this file. -->\n<title>');
 if (process.argv.includes('--check')) {
   const current = fs.existsSync(pagesOut) ? fs.readFileSync(pagesOut, 'utf8') : '';
-  if (current !== pages) { console.error('docs/margin-book/index.html is out of date: run node scripts/build.js and commit it.'); process.exit(1); }
+  // Compare ignoring line endings: git's autocrlf may check the file out with CRLF on Windows.
+  if (current.replace(/\r\n/g, '\n') !== pages.replace(/\r\n/g, '\n')) { console.error('docs/margin-book/index.html is out of date: run node scripts/build.js and commit it.'); process.exit(1); }
   console.log('docs/margin-book/index.html is up to date.');
   process.exit(0);
 }
