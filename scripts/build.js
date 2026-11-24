@@ -2,7 +2,9 @@
 // Builds dist/margin-book.html: index.html with model.js and app.js inlined, as one self-contained file.
 // That file is what gets published as the Margin Book artifact (an artifact cannot load sibling scripts from the repo).
 // The artifact host supplies its own <!doctype>, <html>, <head> and <body>, so the document wrapper is stripped here.
-// Usage: node scripts/build.js        -> prints the output path and the commit it was built from.
+// It also writes docs/margin-book/index.html, the same page as a full document, which GitHub Pages serves.
+// Usage: node scripts/build.js          -> writes both files and prints the commit they were built from.
+//        node scripts/build.js --check  -> writes nothing; exits 1 if docs/margin-book/index.html is out of date.
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
@@ -19,6 +21,8 @@ for (const f of ['model.js', 'app.js']) {
   html = html.replace(tag, () => `<script>\n${js}\n</script>`);
 }
 
+const inlined = html;
+
 // Strip the document wrapper; keep <title>, metas the artifact contract asks for, styles and body content.
 html = html
   .replace(/<!doctype html>\s*/i, '')
@@ -34,7 +38,19 @@ let sha = 'uncommitted';
 try { sha = execSync('git rev-parse --short HEAD', { cwd: root }).toString().trim(); } catch (e) {}
 html = html.replace('<title>', `<!-- Built from neurohome-pricing-model @ ${sha} by scripts/build.js. Edit the repo, not this file. -->\n<title>`);
 
+// GitHub Pages copy: keeps the document wrapper, carries no commit stamp so it only changes when the page does.
+const pagesOut = path.join(root, 'docs', 'margin-book', 'index.html');
+const pages = inlined.replace('<title>', '<!-- Built by scripts/build.js from index.html, model.js and app.js. Edit those, not this file. -->\n<title>');
+if (process.argv.includes('--check')) {
+  const current = fs.existsSync(pagesOut) ? fs.readFileSync(pagesOut, 'utf8') : '';
+  if (current !== pages) { console.error('docs/margin-book/index.html is out of date: run node scripts/build.js and commit it.'); process.exit(1); }
+  console.log('docs/margin-book/index.html is up to date.');
+  process.exit(0);
+}
+fs.mkdirSync(path.dirname(pagesOut), { recursive: true });
+fs.writeFileSync(pagesOut, pages);
+
 const out = path.join(root, 'dist', 'margin-book.html');
 fs.mkdirSync(path.dirname(out), { recursive: true });
 fs.writeFileSync(out, html);
-console.log(`${out}\nbuilt from ${sha}, ${html.length} bytes`);
+console.log(`${out}\n${pagesOut}\nbuilt from ${sha}, ${html.length} bytes`);

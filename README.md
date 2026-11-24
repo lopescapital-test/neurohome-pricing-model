@@ -12,7 +12,8 @@ This is the base for any new pricing model (clinic partnerships, expanded telehe
 |---|---|
 | `model.js` | The data and the math, with no UI. It holds the cost library (`COMPONENTS`), settings (`GLOBALS`), sections with margin floors (`SECTIONS`), every product (`PRODUCTS`), and `calc()`. It runs in the browser (`window.NHModel`) and in Node (`require('./model.js')`). |
 | `index.html` + `app.js` | The Margin Book page. It has one cost column per labor role and per merchandise item, a breakout for each row, and an editable cost library. Open `index.html` in a browser; no build step is needed. |
-| `scripts/build.js` | Inlines `model.js` and `app.js` into `dist/margin-book.html`, the one-file page published as the Margin Book artifact. `dist/` is not committed. |
+| `scripts/build.js` | Inlines `model.js` and `app.js` into one-file pages: `dist/margin-book.html`, published as the Margin Book artifact (`dist/` is not committed), and `docs/margin-book/index.html`, served by GitHub Pages (committed). `node scripts/build.js --check` exits 1 if the Pages copy is out of date. |
+| `docs/margin-book/` | The Margin Book on GitHub Pages: https://lopescapital-test.github.io/neurohome-pricing-model/margin-book/. Built file; never edit it by hand. |
 | `scripts/export-csv.js` | Exports every product to CSV with the per-part costs. Run `node scripts/export-csv.js > margins.csv`. Override the settings with `PAY=3 COMM=10 WS=50`. |
 
 ## Reviews
@@ -55,7 +56,9 @@ The Margin Book is published as a private claude.ai artifact (https://claude.ai/
 2. If nothing changed, it stops.
 3. If something changed, it fast-forwards the local copy, runs `node scripts/build.js`, republishes `dist/margin-book.html` to that artifact, and records the commit.
 
-**To update the page:** push to `main`. The page updates at the next run. To update it sooner, run the task from the app's scheduled tasks.
+**GitHub Pages copy:** `docs/margin-book/index.html` is a second, public copy of the same page. Nothing rebuilds it automatically: after changing `model.js`, `app.js` or `index.html`, run `node scripts/build.js` and commit `docs/margin-book/index.html` in the same commit. Run `node scripts/build.js --check` before pushing to confirm it is current.
+
+**To update the artifact:** push to `main`. The artifact updates at the next run. To update it sooner, run the task from the app's scheduled tasks.
 
 **Limits:** the task runs only while the Claude app is open; a missed run happens at the next launch. It never merges or overwrites local edits. If the local copy has uncommitted changes or has diverged from `main`, it stops and reports.
 
