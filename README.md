@@ -22,6 +22,10 @@ Analyses built on this model are kept in `docs/reviews/`, one folder per review.
 - [`docs/reviews/2026-11-comp-plan/`](docs/reviews/2026-11-comp-plan/) ([live page](https://lopescapital-test.github.io/neurohome-pricing-model/reviews/2026-11-comp-plan/)): the proposed Specialist and care-team compensation plan, tested against the model. Includes a stress-test page, a board markup of the deck and a revised deck.
 - [`docs/reviews/2026-11-pricing/`](docs/reviews/2026-11-pricing/) ([live page](https://lopescapital-test.github.io/neurohome-pricing-model/reviews/2026-11-pricing/)): pricing and margin review against an EBITDA target, with ranked price, cost and scope recommendations. `scenarios.js` reproduces every figure.
 
+## Contracts
+
+- [`docs/contracts/2026-11-founding-sales-partner/`](docs/contracts/2026-11-founding-sales-partner/): the draft Founding Sales Partner agreement and the internal memo behind its pay design. The repo owner chose to publish these here on November 23, 2026, as an exception to the no-contracts rule above.
+
 ## How a product is defined
 
 ```js
